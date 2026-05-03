@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineHub - Panel de Reportes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="reportes.css" />
+</head>
+<body>
+
+  <!-- Barra de navegación simple -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
+        </svg>
+      </div>
+      <span class="logo-text">Cine<span>Hub</span> Reportes</span>
+    </div>
+    <a href="index.html" class="btn-back">Volver al inicio</a>
+  </nav>
+
+  <!-- Contenedor principal del reporte -->
+  <main class="dashboard-container">
+    
+    <header class="dashboard-header">
+      <div>
+        <h1 class="title">Resultados de la Consulta</h1>
+        <p class="subtitle">Aquí se visualizarán los JOINs desde PostgreSQL (Python / Node.js)</p>
+      </div>
+      
+      <!-- Controles de ejemplo (opcional) -->
+      <div class="controls">
+        <select class="report-selector">
+          <option value="">Selecciona un reporte...</option>
+          <option value="1">Películas y sus Directores</option>
+          <option value="2">Opiniones de Críticos por Película</option>
+          <option value="3">Cartelera por Sucursal</option>
+          <option value="4">Reparto de Producciones</option>
+        </select>
+        <button class="btn-primary">Ejecutar Consulta</button>
+      </div>
+    </header>
+
+    <!-- ÁREA DONDE TU BACKEND INYECTARÁ LOS DATOS -->
+    <div class="table-container">
+      
+      <!-- Mensaje de estado cuando no hay datos -->
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+        <h3>Esperando datos de la base de datos...</h3>
+        <p>Conecta tu lógica de backend para poblar esta sección.</p>
+      </div>
+
+      <!-- 
+        Nota para el backend: 
+        Cuando inyectes la tabla, solo usa la estructura estándar HTML:
+        <table class="data-table">
+          <thead><tr><th>Columna</th></tr></thead>
+          <tbody><tr><td>Dato</td></tr></tbody>
+        </table>
+        El CSS que te preparé ya se encargará de hacerla ver bien.
+      -->
+
+    </div>
+  </main>
+
+</body>
+</html>

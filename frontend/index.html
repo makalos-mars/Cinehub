@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinemx — Descubre tu próxima película favorita</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet" />
+  <!-- Aquí conectamos el archivo CSS -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ══ NAVBAR ══ -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
+        </svg>
+      </div>
+      <span class="logo-text">Cine<span>mx</span></span>
+    </a>
+
+    <ul class="nav-links">
+      <li>
+        <a href="#peliculas" class="active">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z" />
+          </svg>
+          Películas
+        </a>
+      </li>
+      <li>
+        <a href="#cine">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+          </svg>
+          Cine
+        </a>
+      </li>
+      <li>
+        <a href="#directores">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+          </svg>
+          Director
+        </a>
+      </li>
+      <li>
+        <a href="#series">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" />
+          </svg>
+          Series
+        </a>
+      </li>
+    </ul>
+
+    <div class="nav-right">
+      <button class="btn-search" id="searchBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+        </svg>
+        Buscar
+      </button>
+      <button class="btn-cta">Iniciar sesión</button>
+      <button class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══ MOBILE MENU ══ -->
+  <div class="mobile-menu" id="mobileMenu">
+    <ul>
+      <li><a href="#peliculas">Películas</a></li>
+      <li><a href="#cine">Cine</a></li>
+      <li><a href="#directores">Director</a></li>
+      <li><a href="#series">Series</a></li>
+    </ul>
+    <div class="mobile-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <path d="M21 21l-4.35-4.35" />
+      </svg>
+      <input type="text" placeholder="Buscar películas, series…" />
+    </div>
+  </div>
+
+  <!-- ══ SEARCH MODAL ══ -->
+  <div class="search-modal" id="searchModal">
+    <button class="search-close" id="searchClose">✕ Cerrar</button>
+    <div class="search-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <path d="M21 21l-4.35-4.35" />
+      </svg>
+      <input type="text" placeholder="Buscar películas, series, documentales…" autofocus />
+    </div>
+  </div>
+
+  <!-- ══ HERO ══ -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-noise"></div>
+    <div class="hero-gradient-bottom"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">EN TENDENCIA AHORA</div>
+      <h1>Descubre tu próxima<br /><em>película</em> favorita</h1>
+      <p>Aquí encuentras información de miles de películas, series y documentales de México.</p>
+      <div class="hero-actions">
+        <a href="#featured" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          Explorar ahora
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FEATURED SECTION ══ -->
+  <section id="featured">
+    <div class="section-header">
+      <div>
+        <div class="section-label">Selección de nuestros críticos</div>
+        <h2 class="section-title">Destacado esta semana</h2>
+      </div>
+    </div>
+    <div class="featured-grid">
+      <!-- Main Featured -->
+      <div class="featured-main">
+        <img src="https://media.glamour.mx/photos/696175464a68449edec6eb50/1:1/w_2000,h_2000,c_limit/como-agua-para-chocolate-temporada-2.jpg" alt="Featured Movie" loading="lazy" />
+        <div class="card-overlay"></div>
+        <div class="featured-main-info">
+          <span class="card-tag">Estreno</span>
+          <h3>Como agua para chocolate<br />Segunda temporada</h3>
+          <p>Ve el final de la historia de amor de Tita y Pedro</p>
+        </div>
+      </div>
+      <!-- Side cards -->
+      <div class="featured-side">
+        <img src="https://http2.mlstatic.com/D_NQ_NP_637611-MLM88295054266_072025-O.webp" alt="Movie" loading="lazy" />
+        <div class="card-overlay"></div>
+        <div class="featured-side-info">
+          <span class="card-tag">Serie</span>
+          <h4>Chespirito</h4>
+          <div class="card-meta">
+            <span class="card-rating">⭐ 6.0</span>
+            <span>2025</span>
+          </div>
+        </div>
+      </div>
+      <div class="featured-side">
+        <img src="https://i0.wp.com/ciudadanosenred.com.mx/wp-content/uploads/2021/07/marisela-escobedo-1.jpeg?resize=512%2C512&ssl=1" alt="Movie" loading="lazy" />
+        <div class="card-overlay"></div>
+        <div class="featured-side-info">
+          <span class="card-tag">Documental</span>
+          <h4>Las tres muertes de Marisela Escobedo</h4>
+          <div class="card-meta">
+            <span class="card-rating">⭐ 8.8</span>
+            <span>2020</span>
+          </div>
+        </div>
+      </div>
+      <div class="featured-side">
+        <img src="https://media.vogue.mx/photos/6974ece86d86dbffd96af425/2:3/w_2560%2Cc_limit/mundial-86-netflix.jpg" alt="Movie" loading="lazy" />
+        <div class="card-overlay"></div>
+        <div class="featured-side-info">
+          <span class="card-tag">Película</span>
+          <h4>México 86</h4>
+          <div class="card-meta">
+            <span class="card-rating">⭐ 8.0</span>
+            <span>2026</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ══ -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo">
+          <span class="logo-text">Cine<span>mx</span></span>
+        </a>
+        <p>Tu guía definitiva para descubrir películas, series y documentales de México.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Cinemx.</p>
+    </div>
+  </footer>
+
+  <!-- Aquí conectamos el archivo JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>

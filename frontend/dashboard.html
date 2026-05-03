@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineHub - Mi Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+    <!-- BARRA LATERAL IZQUIERDA -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z"/></svg>
+            </div>
+            <span class="logo-text">Cine<span>Hub</span></span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#peliculas" class="active">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg>
+                    Películas
+                </a></li>
+                <li><a href="#series">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+                    Series
+                </a></li>
+                <li><a href="#directores">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    Director
+                </a></li>
+                <li><a href="#cine">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+                    Cine
+                </a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="index.html" class="logout-link">Cerrar sesión</a>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+        <!-- Barra superior de usuario -->
+        <header class="top-bar">
+            <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" placeholder="Buscar en mi biblioteca...">
+            </div>
+            <div class="user-profile">
+                <span>Hola, Usuario</span>
+                <div class="avatar"></div>
+            </div>
+        </header>
+
+        <!-- Sección de Películas Recomendadas -->
+        <section class="dashboard-section">
+            <h2 class="section-title">Películas recomendadas</h2>
+            <div class="content-placeholder">
+                <p>Aquí aparecerán tus recomendaciones basadas en tus gustos.</p>
+                <!-- Aquí tu backend inyectará la grilla de recomendaciones -->
+            </div>
+        </section>
+
+        <!-- Sección de Películas Calificadas -->
+        <section class="dashboard-section">
+            <h2 class="section-title">Tus películas calificadas</h2>
+            <div class="content-placeholder">
+                <p>Aún no has calificado ninguna película.</p>
+                <!-- Aquí tu backend inyectará la lista de calificadas -->
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>
