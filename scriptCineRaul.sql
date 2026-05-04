@@ -1,6 +1,3 @@
--- =====================================================
--- CREACIÓN DE TABLAS (con campos faltantes agregados)
--- =====================================================
 
 CREATE TABLE aficionado(
     correo_aficionado VARCHAR(100) PRIMARY KEY, 
@@ -18,7 +15,7 @@ CREATE TABLE reportero(
     correo_reportero VARCHAR(100) PRIMARY KEY, 
     nombre VARCHAR(100),
     nota TEXT,
-    portafolio TEXT -- Campo faltante agregado
+    portafolio TEXT
 );
 
 CREATE TABLE opinion(
@@ -36,7 +33,7 @@ CREATE TABLE opinion(
 CREATE TABLE director(
     correo VARCHAR(100) PRIMARY KEY, 
     nombre VARCHAR(100),
-    guion TEXT -- Campo faltante agregado
+    guion TEXT
 );
 
 CREATE TABLE produccion(
@@ -83,15 +80,13 @@ CREATE TABLE cine(
 CREATE TABLE cartelera(
     id_pelicula INT,
     no_sucursal INT,
-    horario_de_emision TIME, -- Campo faltante agregado
+    horario_de_emision TIME, 
     PRIMARY KEY (id_pelicula, no_sucursal),
     FOREIGN KEY (id_pelicula) REFERENCES pelicula(id_pelicula),
     FOREIGN KEY (no_sucursal) REFERENCES cine(no_sucursal)
 );
 
--- =====================================================
--- 1. INSERTS DE AFICIONADOS (nombres mexicanos genéricos)
--- =====================================================
+
 INSERT INTO aficionado(correo_aficionado, nombre, id_aficionado) VALUES
 ('juanito@gmail.com', 'Juan Pérez', 101),
 ('laura_mtz@gmail.com', 'Laura Martínez', 102),
@@ -109,9 +104,6 @@ INSERT INTO aficionado(correo_aficionado, nombre, id_aficionado) VALUES
 ('paola_mendoza@gmail.com', 'Paola Mendoza', 114),
 ('alejandro_navarro@gmail.com', 'Alejandro Navarro', 115);
 
--- =====================================================
--- 2. INSERTS DE CRITICOS (nombres mexicanos + algunos conocidos)
--- =====================================================
 INSERT INTO critico (correo_critico, nombre, cedula_profesional) VALUES
 ('carlos_monsi@gmail.com', 'Carlos Monsiváis', 'CP777'),
 ('maria_ibarguengoitia@gmail.com', 'María Ibargüengoitia', 'CP888'),
@@ -129,9 +121,6 @@ INSERT INTO critico (correo_critico, nombre, cedula_profesional) VALUES
 ('enrique_franco@gmail.com', 'Enrique Franco', 'CP1112'),
 ('silvia_vargas@gmail.com', 'Silvia Vargas', 'CP2222');
 
--- =====================================================
--- 3. INSERTS DE REPORTEROS (nombres mexicanos genéricos + portafolio)
--- =====================================================
 INSERT INTO reportero(correo_reportero, nombre, nota, portafolio) VALUES
 ('jose_luis@gmail.com', 'José Luis Hernández', 'Cine mexicano', 'https://portafolio.joseluis.com'),
 ('maria_fernanda@tv.com', 'María Fernanda Ramírez', 'Entrevistas', 'https://portafolio.mfernanda.com'),
@@ -149,9 +138,7 @@ INSERT INTO reportero(correo_reportero, nombre, nota, portafolio) VALUES
 ('martha_ortega@gmail.com', 'Martha Ortega', 'Documentales', 'https://portafolio.marthaortega.com'),
 ('roberto_campos@gmail.com', 'Roberto Campos', 'Noticias culturales', 'https://portafolio.robertocampos.com');
 
--- =====================================================
--- 4. INSERTS DE DIRECTORES (con guion incluido)
--- =====================================================
+
 INSERT INTO director(correo, nombre, guion) VALUES
 ('alfonso_arau@gmail.com', 'Alfonso Arau', 'Adaptación de la novela de Laura Esquivel'),
 ('roberto_gomez@gmail.com', 'Roberto Gómez Bolaños', 'Creador de personajes como el Chavo del 8'),
@@ -169,29 +156,24 @@ INSERT INTO director(correo, nombre, guion) VALUES
 ('rigoberto_castaneda@gmail.com', 'Rigoberto Castañeda', 'Terror basado en leyendas urbanas'),
 ('jorge_michel@gmail.com', 'Jorge Michel Grau', 'Terror con crítica social');
 
--- =====================================================
--- 5. INSERTS DE PRODUCCIONES (15 producciones mexicanas)
--- =====================================================
+
 INSERT INTO produccion(id_produccion, tipo, estado, genero, correo_director) VALUES
-(101, 'Cine', 'Finalizada', 'Drama Romántico', 'alfonso_arau@gmail.com'),
+(101, 'Largometraje', 'Finalizada', 'Drama Romántico', 'alfonso_arau@gmail.com'),
 (102, 'Serie', 'Finalizada', 'Comedia', 'roberto_gomez@gmail.com'),
 (103, 'Documental', 'Finalizada', 'Crimen', 'xavier_robles@gmail.com'),
 (104, 'Serie', 'Desarrollo', 'Deporte', 'fernando_kalife@gmail.com'),
-(105, 'Cine', 'Finalizada', 'Fantasía Oscura', 'guillermo_del_toro@gmail.com'),
-(106, 'Cine', 'Finalizada', 'Drama', 'alejandro_inarritu@gmail.com'),
-(107, 'Cine', 'Finalizada', 'Comedia', 'carlos_cuaron@gmail.com'),
-(108, 'Cine', 'Finalizada', 'Drama', 'amate_escalante@gmail.com'),
-(109, 'Cine', 'Rodaje', 'Acción', 'michelle_rodriguez@gmail.com'),
-(110, 'Cine', 'Finalizada', 'Comedia Satírica', 'luis_estrada@gmail.com'),
+(105, 'Largometraje', 'Finalizada', 'Fantasía Oscura', 'guillermo_del_toro@gmail.com'),
+(106, 'Largometraje', 'Finalizada', 'Drama', 'alejandro_inarritu@gmail.com'),
+(107, 'Largometraje', 'Finalizada', 'Comedia', 'carlos_cuaron@gmail.com'),
+(108, 'Largometraje', 'Finalizada', 'Drama', 'amate_escalante@gmail.com'),
+(109, 'Largometraje', 'Rodaje', 'Acción', 'michelle_rodriguez@gmail.com'),
+(110, 'Largometraje', 'Finalizada', 'Comedia Satírica', 'luis_estrada@gmail.com'),
 (111, 'Serie', 'Finalizada', 'Comedia', 'emilio_portes@gmail.com'),
-(112, 'Documental', 'Rodaje', 'Social', 'kenya_marquez@gmail.com'),
-(113, 'Cine', 'Finalizada', 'Drama', 'natalia_beristain@gmail.com'),
-(114, 'Cine', 'Finalizada', 'Terror', 'rigoberto_castaneda@gmail.com'),
-(115, 'Cine', 'Finalizada', 'Terror', 'jorge_michel@gmail.com');
+(112, 'Largometraje', 'Rodaje', 'Social', 'kenya_marquez@gmail.com'),
+(113, 'Largometraje', 'Finalizada', 'Drama', 'natalia_beristain@gmail.com'),
+(114, 'Largometraje', 'Finalizada', 'Terror', 'rigoberto_castaneda@gmail.com'),
+(115, 'Largometraje', 'Finalizada', 'Terror', 'jorge_michel@gmail.com');
 
--- =====================================================
--- 6. INSERTS DE OPINIONES (15 opiniones)
--- =====================================================
 INSERT INTO opinion(id, calificacion, comentario, correo_reportero, correo_aficionado, correo_critico) VALUES
 (2001, 5, 'Un clásico del cine mexicano, lleno de magia y tradición', 'jose_luis@gmail.com', NULL, NULL),
 (2002, 4, 'El humor de Chespirito nunca pasa de moda', NULL, 'juanito@gmail.com', NULL),
@@ -209,9 +191,6 @@ INSERT INTO opinion(id, calificacion, comentario, correo_reportero, correo_afici
 (2014, 3, 'Terror efectivo pero con altibajos', 'ricardo_sanchez@eluniversal.com', NULL, NULL),
 (2015, 4, 'Violenta y perturbadora, bien lograda', NULL, 'jorge_lopez@gmail.com', NULL);
 
--- =====================================================
--- 7. INSERTS DE PELICULAS (15 títulos mexicanos)
--- =====================================================
 INSERT INTO pelicula(id_pelicula, titulo, genero, portada, sinopsis, formato, duracion, id_opinion, correo_director, id_produccion) VALUES
 (301, 'Como agua para chocolate', 'Drama Romántico', 'agua_chocolate.jpg', 'Tita y Pedro viven un amor prohibido durante la Revolución Mexicana, donde la magia y la cocina se entrelazan', 'Digital', '1:45:00', 2001, 'alfonso_arau@gmail.com', 101),
 (302, 'Chespirito', 'Comedia', 'chespirito.jpg', 'Programa de sketches del Chavo del 8, el Chapulín Colorado y más personajes icónicos', 'Digital', '0:30:00', 2002, 'roberto_gomez@gmail.com', 102),
@@ -229,9 +208,7 @@ INSERT INTO pelicula(id_pelicula, titulo, genero, portada, sinopsis, formato, du
 (314, 'Kilómetro 31', 'Terror', 'km31.jpg', 'Una mujer investiga la desaparición de su hermana gemela en una carretera embrujada', 'Digital', '1:43:00', 2014, 'rigoberto_castaneda@gmail.com', 114),
 (315, 'Somos lo que hay', 'Terror', 'somos_lo_que_hay.jpg', 'Familia de caníbales sobrevive tras la muerte del padre en un México contemporáneo', 'Digital', '1:30:00', 2015, 'jorge_michel@gmail.com', 115);
 
--- =====================================================
--- 8. INSERTS DE REPARTO (actores mexicanos)
--- =====================================================
+
 INSERT INTO reparto(id_reparto, actor, extra, doble, id_produccion) VALUES
 (5001, 'Marco Leonardi', 'Extra 1', 'Doble 1', 101),
 (5002, 'Lumi Cavazos', 'Extra 2', 'Doble 2', 101),
@@ -252,9 +229,7 @@ INSERT INTO reparto(id_reparto, actor, extra, doble, id_produccion) VALUES
 (5017, 'Mayra Sérbulo', 'Extra 17', 'Doble 17', 114),
 (5018, 'Francisco Barreiro', 'Extra 18', 'Doble 18', 115);
 
--- =====================================================
--- 9. INSERTS DE CINES (se mantienen igual)
--- =====================================================
+
 INSERT INTO cine(no_sucursal, nombre_cine, ubicacion, numero_sala) VALUES
 (1, 'Cinepolis Perisur', 'CDMX', 15),
 (2, 'Cinemex Patriotismo', 'CDMX', 8),
@@ -272,9 +247,6 @@ INSERT INTO cine(no_sucursal, nombre_cine, ubicacion, numero_sala) VALUES
 (14, 'Cinepolis Mérida', 'Yucatán', 7),
 (15, 'Cinemex Universidad', 'CDMX', 5);
 
--- =====================================================
--- 10. INSERTS DE CARTELERA (con horarios de emisión)
--- =====================================================
 INSERT INTO cartelera(id_pelicula, no_sucursal, horario_de_emision) VALUES
 (301, 1, '16:00:00'),
 (301, 2, '18:30:00'),

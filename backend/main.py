@@ -6,7 +6,7 @@ app = FastAPI(title="CineHub API")
 
 # ⚠️ ¡IMPORTANTE! Cambia estos datos por los de tu PostgreSQL local
 DB_CONFIG = {
-    "dbname": "", # Pon el nombre que le diste a tu BD en pgAdmin/psql
+    "dbname": "cinemx_prototipo", # Pon el nombre que le diste a tu BD en pgAdmin/psql
     "user": "postgres",                     # Usualmente es postgres
     "password": "",       # La contraseña que usas para entrar a psql
     "host": "localhost",
