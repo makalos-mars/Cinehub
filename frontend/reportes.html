@@ -6,68 +6,298 @@
   <title>CineHub - Panel de Reportes</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="reportes.css" />
+  <style>
+    /* ── BREADCRUMB ── */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .breadcrumb a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .breadcrumb a:hover { color: var(--text); }
+    .breadcrumb-sep {
+      opacity: 0.4;
+    }
+    .breadcrumb-current {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ── NAVBAR ACTUALIZADO ── */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 5%;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-back {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-back:hover { color: var(--text); }
+    .btn-back svg { width: 15px; height: 15px; }
+
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-avatar {
+      width: 30px;
+      height: 30px;
+      background: rgba(229,57,53,0.15);
+      border: 1px solid rgba(229,57,53,0.3);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #f0ede8;
+    }
+    .nav-username {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .nav-role-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(229,57,53,0.12);
+      border: 1px solid rgba(229,57,53,0.25);
+      color: #ff6b6b;
+    }
+
+    /* ── LOADING STATE ── */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 400px;
+      gap: 16px;
+      color: var(--text-muted);
+    }
+    .loading-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(229,57,53,0.15);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
 
-  <!-- Barra de navegación simple -->
+  <!-- Barra de navegación -->
   <nav class="navbar">
     <div class="nav-brand">
       <div class="logo-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" /></svg>
       </div>
       <span class="logo-text">Cine<span>Hub</span> Reportes</span>
     </div>
-    <a href="index.html" class="btn-back">Volver al inicio</a>
+
+    <div class="nav-actions">
+      <!-- Info del usuario en sesión -->
+      <div class="nav-user" id="navUser" style="display:none;">
+        <div class="nav-avatar" id="navAvatar">?</div>
+        <span class="nav-username" id="navUsername"></span>
+        <span class="nav-role-badge" id="navRoleBadge"></span>
+      </div>
+      <!-- Volver al dashboard (mantiene sesión) -->
+      <a href="dashboard.html" class="btn-back">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Mi Panel
+      </a>
+      <a href="index.html" class="btn-back" style="border-left:1px solid var(--border);padding-left:16px;">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        Inicio
+      </a>
+    </div>
   </nav>
 
-  <!-- Contenedor principal del reporte -->
+  <!-- Contenedor principal -->
   <main class="dashboard-container">
-    
+
     <header class="dashboard-header">
       <div>
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+          <a href="index.html">Inicio</a>
+          <span class="breadcrumb-sep">/</span>
+          <a href="dashboard.html">Mi Panel</a>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Reportes</span>
+        </div>
         <h1 class="title">Resultados de la Consulta</h1>
-        <p class="subtitle">Aquí se visualizarán los JOINs desde PostgreSQL (Python / Node.js)</p>
+        <p class="subtitle">Visualización de JOINs desde PostgreSQL (Python / Node.js)</p>
       </div>
-      
-      <!-- Controles de ejemplo (opcional) -->
+
       <div class="controls">
-        <select class="report-selector">
+        <select class="report-selector" id="reportSelector">
           <option value="">Selecciona un reporte...</option>
           <option value="1">Películas y sus Directores</option>
           <option value="2">Opiniones de Críticos por Película</option>
           <option value="3">Cartelera por Sucursal</option>
           <option value="4">Reparto de Producciones</option>
         </select>
-        <button class="btn-primary">Ejecutar Consulta</button>
+        <button class="btn-primary" id="runQueryBtn">Ejecutar Consulta</button>
       </div>
     </header>
 
-    <!-- ÁREA DONDE TU BACKEND INYECTARÁ LOS DATOS -->
-    <div class="table-container">
-      
-      <!-- Mensaje de estado cuando no hay datos -->
-      <div class="empty-state">
+    <!-- ÁREA DE RESULTADOS -->
+    <div class="table-container" id="tableContainer">
+      <div class="empty-state" id="emptyState">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
         </svg>
         <h3>Esperando datos de la base de datos...</h3>
-        <p>Conecta tu lógica de backend para poblar esta sección.</p>
+        <p>Selecciona un reporte y presiona "Ejecutar Consulta".</p>
       </div>
 
-      <!-- 
-        Nota para el backend: 
-        Cuando inyectes la tabla, solo usa la estructura estándar HTML:
-        <table class="data-table">
-          <thead><tr><th>Columna</th></tr></thead>
-          <tbody><tr><td>Dato</td></tr></tbody>
-        </table>
-        El CSS que te preparé ya se encargará de hacerla ver bien.
-      -->
+      <div class="loading-state" id="loadingState" style="display:none;">
+        <div class="loading-spinner"></div>
+        <p>Ejecutando consulta SQL...</p>
+      </div>
 
+      <div id="tableResult" style="display:none;"></div>
     </div>
   </main>
 
+  <script>
+  (function() {
+    // ── Protección de ruta ──
+    var sessionData = sessionStorage.getItem('cinehub_session');
+    if (!sessionData) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    var user;
+    try {
+      user = JSON.parse(sessionData);
+    } catch(e) {
+      sessionStorage.removeItem('cinehub_session');
+      window.location.href = 'login.html';
+      return;
+    }
+
+    var roleLabels = {
+      aficionado: 'Aficionado', critico: 'Crítico',
+      reportero: 'Reportero', director: 'Director'
+    };
+
+    // ── Llenar datos del navbar ──
+    var navUser    = document.getElementById('navUser');
+    var navAvatar  = document.getElementById('navAvatar');
+    var navName    = document.getElementById('navUsername');
+    var navRole    = document.getElementById('navRoleBadge');
+    if (navUser)   navUser.style.display = 'flex';
+    if (navAvatar) navAvatar.textContent = (user.name || 'U')[0].toUpperCase();
+    if (navName)   navName.textContent   = user.name;
+    if (navRole)   navRole.textContent   = roleLabels[user.role] || user.role;
+
+    // ── Preseleccionar reporte desde query param (?reporte=N) ──
+    var params   = new URLSearchParams(window.location.search);
+    var reporte  = params.get('reporte');
+    var selector = document.getElementById('reportSelector');
+    if (reporte && selector) {
+      selector.value = reporte;
+    }
+
+    
+
+    // ── Lógica de ejecución ──
+    var runBtn       = document.getElementById('runQueryBtn');
+    var emptyState   = document.getElementById('emptyState');
+    var loadingState = document.getElementById('loadingState');
+    var tableResult  = document.getElementById('tableResult');
+
+    function showTable(reportId) {
+      var data = MOCK_DATA[reportId];
+      if (!data) return;
+
+      var html = '<table class="data-table">';
+      html += '<thead><tr>';
+      data.columns.forEach(function(col) {
+        html += '<th>' + col + '</th>';
+      });
+      html += '</tr></thead><tbody>';
+      data.rows.forEach(function(row) {
+        html += '<tr>';
+        row.forEach(function(cell) {
+          html += '<td>' + cell + '</td>';
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      tableResult.innerHTML = html;
+    }
+
+    function runQuery() {
+      var val = selector.value;
+      if (!val) {
+        emptyState.style.display  = 'flex';
+        loadingState.style.display = 'none';
+        tableResult.style.display  = 'none';
+        return;
+      }
+
+      // Estado de carga
+      emptyState.style.display   = 'none';
+      loadingState.style.display = 'flex';
+      tableResult.style.display  = 'none';
+
+      // Simula latencia del backend (600ms)
+      setTimeout(function() {
+        loadingState.style.display = 'none';
+        tableResult.style.display  = 'block';
+        showTable(val);
+      }, 650);
+    }
+
+    // ── Si viene un reporte preseleccionado, ejecutarlo automáticamente ──
+    if (reporte && MOCK_DATA[reporte]) {
+      setTimeout(runQuery, 300);
+    }
+
+    runBtn.addEventListener('click', runQuery);
+
+    // ── También ejecutar al cambiar el selector ──
+    selector.addEventListener('change', function() {
+      if (this.value) runQuery();
+    });
+
+  })();
+  </script>
 </body>
 </html>
