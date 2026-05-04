@@ -1,47 +1,106 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from pydantic import BaseModel
+
+class ConsultaSQL(BaseModel):
+    query: str
 
 app = FastAPI(title="CineHub API")
 
-# ⚠️ ¡IMPORTANTE! Cambia estos datos por los de tu PostgreSQL local
+# IMPORTANTE: Esto permite que tu HTML (Live Server) se comunique con FastAPI
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 DB_CONFIG = {
-    "dbname": "cinemx_prototipo", # Pon el nombre que le diste a tu BD en pgAdmin/psql
-    "user": "postgres",                     # Usualmente es postgres
-    "password": "",       # La contraseña que usas para entrar a psql
+    "dbname": "cinemx_prototipo", 
+    "user": "postgres",           
+    "password": "byemike24", # Pon tu contraseña real
     "host": "localhost",
     "port": "5432"
 }
 
 def get_db_connection():
-    # Esta función crea el "puente" hacia tu base de datos
-    conn = psycopg2.connect(**DB_CONFIG)
-    return conn
+    return psycopg2.connect(**DB_CONFIG)
 
-# Ruta de prueba para ver si el servidor está vivo
-@app.get("/")
-def read_root():
-    return {"mensaje": "¡El servidor de CineHub está corriendo perfectamente!"}
+# REPORTE 1: Películas y Directores
+@app.get("/api/reportes/1")
+def reporte_peliculas_directores():
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    # Hacemos un JOIN entre pelicula y director
+    cursor.execute("""
+        SELECT p.titulo, p.genero, p.formato, d.nombre AS director 
+        FROM pelicula p
+        JOIN director d ON p.correo_director = d.correo;
+    """)
+    resultados = cursor.fetchall()
+    cursor.close(); conn.close()
+    return resultados
 
-# Ruta para pedirle las películas a PostgreSQL
-@app.get("/api/peliculas")
-def obtener_peliculas():
+# REPORTE 2: Opiniones de Críticos
+@app.get("/api/reportes/2")
+def reporte_opiniones_criticos():
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT p.titulo, c.nombre AS critico, o.calificacion, o.comentario 
+        FROM pelicula p
+        JOIN opinion o ON p.id_opinion = o.id
+        JOIN critico c ON o.correo_critico = c.correo_critico;
+    """)
+    resultados = cursor.fetchall()
+    cursor.close(); conn.close()
+    return resultados
+
+# REPORTE 3: Cartelera por Sucursal
+@app.get("/api/reportes/3")
+def reporte_cartelera():
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT c.nombre_cine, c.ubicacion, p.titulo, ca.horario_de_emision 
+        FROM cartelera ca
+        JOIN cine c ON ca.no_sucursal = c.no_sucursal
+        JOIN pelicula p ON ca.id_pelicula = p.id_pelicula;
+    """)
+    resultados = cursor.fetchall()
+    cursor.close(); conn.close()
+    return resultados
+
+# REPORTE 4: Reparto de Producciones
+@app.get("/api/reportes/4")
+def reporte_reparto():
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT pr.tipo, p.titulo, r.actor, r.extra, r.doble 
+        FROM produccion pr
+        JOIN pelicula p ON pr.id_produccion = p.id_produccion
+        JOIN reparto r ON pr.id_produccion = r.id_produccion;
+    """)
+    resultados = cursor.fetchall()
+    cursor.close(); conn.close()
+    return resultados
+
+# REPORTE 5: Consulta Libre en Vivo
+@app.post("/api/consulta-libre")
+def ejecutar_consulta_libre(consulta: ConsultaSQL):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        # 1. Abrimos la conexión
-        conn = get_db_connection()
-        # Usamos RealDictCursor para que los datos salgan en formato JSON automáticamente
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
-        # 2. Ejecutamos la consulta a tu tabla
-        cursor.execute("SELECT id_pelicula, titulo, genero, formato FROM pelicula;")
-        peliculas = cursor.fetchall()
-        
-        # 3. Cerramos la puerta
-        cursor.close()
-        conn.close()
-        
-        # 4. Devolvemos los datos
-        return peliculas
-        
+        # Ejecutamos exactamente lo que escribas en la página web
+        cursor.execute(consulta.query)
+        resultados = cursor.fetchall()
+        cursor.close(); conn.close()
+        return resultados
     except Exception as e:
-        return {"error": f"Hubo un problema con la base de datos: {str(e)}"}
+        cursor.close(); conn.close()
+        # Si la consulta tiene un error de sintaxis, se lo mandamos a la página
+        return [{"error_sql": f"Error en tu consulta: {str(e)}"}]

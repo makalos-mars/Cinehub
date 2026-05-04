@@ -30,12 +30,12 @@ body {
   cursor: default;
 }
 
-/* ── SCROLLBAR ── */
+/*  SCROLLBAR  */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--red-dark); border-radius: 3px; }
 
-/* ── NAVBAR ── */
+/*  NAVBAR  */
 nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -105,7 +105,7 @@ nav.scrolled {
 .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 8px; }
 .hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
 
-/* ── HERO ── */
+/* HERO */
 .hero { position: relative; min-height: 100vh; display: flex; align-items: center; overflow: hidden; }
 .hero-bg {
   position: absolute; inset: 0;
@@ -138,13 +138,13 @@ nav.scrolled {
 .btn-primary:hover { background: #f44336; transform: translateY(-2px); }
 .btn-primary svg { width: 18px; height: 18px; }
 
-/* ── SECTIONS BASE ── */
+/* SECTIONS BASE  */
 section { padding: 80px 5%; }
 .section-header { margin-bottom: 40px; }
 .section-label { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
 .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(32px, 4vw, 52px); color: var(--text); }
 
-/* ── FEATURED GRID ── */
+/* FEATURED GRID  */
 .featured-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr; grid-template-rows: auto auto; gap: 20px; }
 .card-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0%, transparent 100%); opacity: 0.7; transition: opacity 0.35s; }
 .card-tag { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(229, 57, 53, 0.9); color: white; padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }
@@ -164,7 +164,7 @@ section { padding: 80px 5%; }
 .featured-side-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 18px; }
 .featured-side-info h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
 
-/* ── MODALS & MENUS ── */
+/* MODALS & MENUS */
 .search-modal {
   position: fixed; inset: 0; z-index: 200; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(20px);
   display: flex; flex-direction: column; align-items: center; padding: 80px 20px 40px; opacity: 0; pointer-events: none; transition: opacity 0.25s;
@@ -185,13 +185,13 @@ section { padding: 80px 5%; }
 .mobile-menu ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .mobile-menu a { color: var(--text); text-decoration: none; font-size: 16px; }
 
-/* ── FOOTER ── */
+/* FOOTER */
 footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 40px 5% 20px; }
 .footer-top { margin-bottom: 20px; }
 .footer-brand p { font-size: 13px; color: var(--muted); margin-top: 10px; }
 .footer-bottom { border-top: 1px solid var(--border); padding-top: 20px; font-size: 12px; color: var(--muted); }
 
-/* ── RESPONSIVE ── */
+/*  RESPONSIVE  */
 @media (max-width: 1024px) {
   .featured-grid { grid-template-columns: 1fr 1fr; }
   .featured-main { grid-row: auto; min-height: 350px; }

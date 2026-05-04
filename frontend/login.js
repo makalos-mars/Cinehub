@@ -1,20 +1,18 @@
-// ══════════════════════════════════════════════════
-//  CineHub — login.js
-//  Sistema de autenticación con roles y validaciones
-// ══════════════════════════════════════════════════
 
-// ── BASE DE DATOS SIMULADA ──
-// En producción, esto se reemplaza por llamadas a tu backend (Node.js / Python + PostgreSQL)
+// autenticación con roles y validaciones
+
+
+// ── BASE DE DATOS SIMULADA 
 const DB_USERS = [
-  { id: 1, name: 'Carlos',    lastName: 'Mendoza',  email: 'aficionado@cinehub.mx',  password: 'test1234', role: 'aficionado' },
-  { id: 2, name: 'Alejandra', lastName: 'Ríos',     email: 'critico@cinehub.mx',     password: 'test1234', role: 'critico'    },
-  { id: 3, name: 'Roberto',   lastName: 'Salinas',  email: 'reportero@cinehub.mx',   password: 'test1234', role: 'reportero'  },
-  { id: 4, name: 'Patricia',  lastName: 'Vega',     email: 'director@cinehub.mx',    password: 'test1234', role: 'director'   },
+  { id: 1, name: 'Carlos', lastName: 'Mendoza', email: 'aficionado@cinehub.mx', password: 'test1234', role: 'aficionado' },
+  { id: 2, name: 'Alejandra', lastName: 'Ríos', email: 'critico@cinehub.mx', password: 'test1234', role: 'critico' },
+  { id: 3, name: 'Roberto', lastName: 'Salinas', email: 'reportero@cinehub.mx', password: 'test1234', role: 'reportero' },
+  { id: 4, name: 'Patricia', lastName: 'Vega', email: 'director@cinehub.mx', password: 'test1234', role: 'director' },
 ];
 
-// Registros guardados en sessionStorage (simula la sesión actual del servidor)
+// Registros guardados en sessionStorage
 function getRegisteredUsers() {
-  try { return JSON.parse(sessionStorage.getItem('cinehub_users') || '[]'); } 
+  try { return JSON.parse(sessionStorage.getItem('cinehub_users') || '[]'); }
   catch { return []; }
 }
 function saveRegisteredUsers(users) {
@@ -109,7 +107,7 @@ $('regEmail').addEventListener('input', function () {
   clearTimeout(emailCheckTimeout);
   const email = this.value.trim();
   const statusEl = $('emailStatus');
-  
+
   clearError('regEmailError');
   setInputState(this, '');
   statusEl.textContent = '';
@@ -127,7 +125,6 @@ $('regEmail').addEventListener('input', function () {
     }
 
     // Simular verificación contra la base de datos
-    statusEl.textContent = '⏳';
     statusEl.style.color = 'var(--muted)';
 
     setTimeout(() => {
@@ -152,7 +149,7 @@ $('regPassword').addEventListener('input', function () {
 });
 
 function updateStrengthMeter(pwd) {
-  const bars = ['bar1','bar2','bar3','bar4'].map(id => $(id));
+  const bars = ['bar1', 'bar2', 'bar3', 'bar4'].map(id => $(id));
   const label = $('strengthLabel');
   bars.forEach(b => { b.className = 'bar'; });
 
@@ -165,11 +162,11 @@ function updateStrengthMeter(pwd) {
   if (/[^A-Za-z0-9]/.test(pwd)) score++;
 
   const configs = [
-    { color: 'weak',   text: 'Muy débil' },
-    { color: 'weak',   text: 'Débil'     },
-    { color: 'medium', text: 'Media'     },
-    { color: 'medium', text: 'Buena'     },
-    { color: 'strong', text: 'Fuerte'    },
+    { color: 'weak', text: 'Muy débil' },
+    { color: 'weak', text: 'Débil' },
+    { color: 'medium', text: 'Media' },
+    { color: 'medium', text: 'Buena' },
+    { color: 'strong', text: 'Fuerte' },
   ];
   const cfg = configs[score] || configs[0];
   label.textContent = cfg.text;
@@ -184,7 +181,7 @@ function isValidEmail(email) {
 function validateLoginForm() {
   let valid = true;
   const email = $('loginEmail').value.trim();
-  const pwd   = $('loginPassword').value;
+  const pwd = $('loginPassword').value;
 
   clearError('loginEmailError');
   clearError('loginPasswordError');
@@ -212,15 +209,15 @@ function validateLoginForm() {
 
 function validateRegisterForm() {
   let valid = true;
-  const name     = $('regName').value.trim();
+  const name = $('regName').value.trim();
   const lastName = $('regLastName').value.trim();
-  const email    = $('regEmail').value.trim();
-  const pwd      = $('regPassword').value;
-  const role     = document.querySelector('input[name="userRole"]:checked')?.value;
+  const email = $('regEmail').value.trim();
+  const pwd = $('regPassword').value;
+  const role = document.querySelector('input[name="userRole"]:checked')?.value;
 
-  ['regNameError','regLastNameError','regEmailError','regPasswordError','regRoleError']
+  ['regNameError', 'regLastNameError', 'regEmailError', 'regPasswordError', 'regRoleError']
     .forEach(clearError);
-  [$('regName'),$('regLastName'),$('regEmail'),$('regPassword')]
+  [$('regName'), $('regLastName'), $('regEmail'), $('regPassword')]
     .forEach(el => setInputState(el, ''));
 
   if (!name) {
@@ -270,32 +267,32 @@ function validateRegisterForm() {
 
 // Mensajes de bienvenida por rol
 const ROLE_MESSAGES = {
-  aficionado: { title: '¡Bienvenido, Aficionado!',  desc: 'Disfruta tus recomendaciones personalizadas.' },
-  critico:    { title: '¡Hola, Crítico!',           desc: 'Tus reseñas esperan ser escritas.' },
-  reportero:  { title: '¡Listo, Reportero!',        desc: 'Cubre los últimos estrenos del cine mexicano.' },
-  director:   { title: '¡Bienvenido, Director!',    desc: 'Gestiona tus producciones desde el panel.' },
+  aficionado: { title: '¡Bienvenido, Aficionado!', desc: 'Disfruta tus recomendaciones personalizadas.' },
+  critico: { title: '¡Hola, Crítico!', desc: 'Tus reseñas esperan ser escritas.' },
+  reportero: { title: '¡Listo, Reportero!', desc: 'Cubre los últimos estrenos del cine mexicano.' },
+  director: { title: '¡Bienvenido, Director!', desc: 'Gestiona tus producciones desde el panel.' },
 };
 
 function showSuccessModal(user) {
-  const modal   = $('successModal');
-  const title   = $('successTitle');
-  const desc    = $('successDesc');
-  const fill    = $('progressFill');
-  const msg     = ROLE_MESSAGES[user.role] || { title: '¡Bienvenido!', desc: 'Redirigiendo...' };
+  const modal = $('successModal');
+  const title = $('successTitle');
+  const desc = $('successDesc');
+  const fill = $('progressFill');
+  const msg = ROLE_MESSAGES[user.role] || { title: '¡Bienvenido!', desc: 'Redirigiendo...' };
 
   title.textContent = msg.title;
-  desc.textContent  = msg.desc;
-  fill.style.width  = '0%';
+  desc.textContent = msg.desc;
+  fill.style.width = '0%';
 
   modal.classList.add('open');
 
   // Guardar sesión en sessionStorage
   sessionStorage.setItem('cinehub_session', JSON.stringify({
-    id:       user.id,
-    name:     user.name,
+    id: user.id,
+    name: user.name,
     lastName: user.lastName,
-    email:    user.email,
-    role:     user.role,
+    email: user.email,
+    role: user.role,
   }));
 
   // Animación de progreso → redirigir
@@ -318,7 +315,7 @@ $('loginForm').addEventListener('submit', async function (e) {
   await simulateDelay(900); // Simula latencia del servidor
 
   const email = $('loginEmail').value.trim().toLowerCase();
-  const pwd   = $('loginPassword').value;
+  const pwd = $('loginPassword').value;
 
   const user = getAllUsers().find(
     u => u.email.toLowerCase() === email && u.password === pwd
@@ -348,11 +345,11 @@ $('registerForm').addEventListener('submit', async function (e) {
   setLoading('register', true);
   await simulateDelay(1100);
 
-  const name     = $('regName').value.trim();
+  const name = $('regName').value.trim();
   const lastName = $('regLastName').value.trim();
-  const email    = $('regEmail').value.trim();
-  const pwd      = $('regPassword').value;
-  const role     = document.querySelector('input[name="userRole"]:checked').value;
+  const email = $('regEmail').value.trim();
+  const pwd = $('regPassword').value;
+  const role = document.querySelector('input[name="userRole"]:checked').value;
 
   // Volver a verificar por si acaso
   const emailTaken = getAllUsers().some(u => u.email.toLowerCase() === email.toLowerCase());
@@ -365,7 +362,7 @@ $('registerForm').addEventListener('submit', async function (e) {
 
   // Crear usuario
   const newUser = {
-    id:       Date.now(),
+    id: Date.now(),
     name, lastName, email,
     password: pwd,
     role,
@@ -380,7 +377,6 @@ $('registerForm').addEventListener('submit', async function (e) {
 });
 
 // ── INICIALIZACIÓN ──
-// Si ya hay sesión activa, redirigir directo al dashboard
 (function checkSession() {
   const session = sessionStorage.getItem('cinehub_session');
   if (session) {

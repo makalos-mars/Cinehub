@@ -7,9 +7,9 @@
             "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
-            "database": "cinemx",
-            "username": "postgres",
-            "name": "CineMX local"
+            "database": "cinemx_prototipo",
+            "name": "Cinehub",
+            "username": "postgres"
         }
     ]
 }
