@@ -284,7 +284,7 @@ function showSuccessModal(user) {
   desc.textContent = msg.desc;
   fill.style.width = '0%';
 
-  modal.classList.add('open');
+  // modal.classList.add('open');
 
   // Guardar sesión en sessionStorage
   sessionStorage.setItem('cinehub_session', JSON.stringify({
@@ -295,14 +295,15 @@ function showSuccessModal(user) {
     role: user.role,
   }));
 
-  // Animación de progreso → redirigir
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => { fill.style.width = '100%'; });
-  });
+  // // Animación de progreso → redirigir
+  // requestAnimationFrame(() => {
+  //   requestAnimationFrame(() => { fill.style.width = '100%'; });
+  // });
 
-  setTimeout(() => {
-    window.location.href = 'dashboard.html';
-  }, 2800);
+  // setTimeout(() => {
+  //   window.location.href = 'dashboard.html';
+  // }, 2800);
+  window.location.href = 'dashboard.html';
 }
 
 // ── SUBMIT LOGIN ──
@@ -312,7 +313,7 @@ $('loginForm').addEventListener('submit', async function (e) {
   if (!validateLoginForm()) return;
 
   setLoading('login', true);
-  await simulateDelay(900); // Simula latencia del servidor
+  // await simulateDelay(900); // Simula latencia del servidor
 
   const email = $('loginEmail').value.trim().toLowerCase();
   const pwd = $('loginPassword').value;

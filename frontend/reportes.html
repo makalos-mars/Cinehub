@@ -8,8 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="reportes.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
-    /* Estilo para el estado de carga */
     .loading-state {
       display: none;
       flex-direction: column;
@@ -29,11 +29,47 @@
       margin-bottom: 15px;
     }
 
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .chart-wrapper {
+      display: none;
+      padding: 30px;
     }
+
+    .chart-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 1px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .chart-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .chart-canvas-container {
+      position: relative;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .report-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .tag-chart  { background: rgba(229,57,53,0.15); color: var(--red); }
+    .tag-join   { background: rgba(66,165,245,0.15); color: #42a5f5; }
+    .tag-group  { background: rgba(102,187,106,0.15); color: #66bb6a; }
   </style>
 </head>
 
@@ -43,8 +79,7 @@
     <div class="nav-brand">
       <div class="logo-icon">
         <svg viewBox="0 0 24 24">
-          <path
-            d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
+          <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
         </svg>
       </div>
       <span class="logo-text">Cine<span>Hub</span> Reportes</span>
@@ -55,25 +90,17 @@
   <main class="dashboard-container">
     <header class="dashboard-header">
       <div>
-        <h1 class="title">Resultados de la Consulta</h1>
-        <p class="subtitle">Visualización dinámica de datos desde PostgreSQL</p>
+        <h1 class="title">Panel de Reportes</h1>
+        <p class="subtitle">Selecciona un reporte para visualizar datos en tiempo real desde PostgreSQL</p>
       </div>
 
-      <div class="controls" style="flex-direction: column; width: 100%; max-width: 600px;">
-        <div style="display: flex; gap: 12px; width: 100%;">
-          <select id="reportSelector" class="report-selector" style="flex: 1;">
-            <option value="">Selecciona un reporte...</option>
-            <!-- <option value="1">Películas y sus Directores (JOIN)</option>
-            <option value="2">Opiniones de Críticos por Película</option>
-            <option value="3">Cartelera por Sucursal y Horarios</option>
-            <option value="4">Reparto de Producciones Mexicanas</option> -->
-            <option value="libre" style="font-weight: bold; color: var(--red);">Consulta SQL Libre</option>
-          </select>
-          <button id="runQueryBtn" class="btn-primary">Ejecutar</button>
-        </div>
-
-        <textarea id="sqlInput" placeholder="Escribe o pega aquí tu consulta SQL (ej. SELECT * FROM aficionado;)"
-          style="display: none; width: 100%; height: 100px; margin-top: 15px; padding: 12px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-family: monospace; resize: vertical;"></textarea>
+      <div class="controls">
+        <select id="reportSelector" class="report-selector">
+          <option value="">Selecciona un reporte...</option>
+          <option value="1">Reporte 1 — Películas por Género (Gráfica)</option>
+          <option value="2">Reporte 2 — Cartelera con Películas y Cines (JOIN)</option>
+          <option value="3">Reporte 3 — Funciones por Sucursal (GROUP BY)</option>
+        </select>
       </div>
     </header>
 
@@ -93,6 +120,17 @@
         <p>Consultando a PostgreSQL...</p>
       </div>
 
+      <!-- Reporte 1: Gráfica -->
+      <div id="chartResult" class="chart-wrapper">
+        <span class="report-tag tag-chart">Gráfica</span>
+        <h2 class="chart-title">Películas por Género</h2>
+        <p class="chart-subtitle">Distribución del catálogo según género cinematográfico</p>
+        <div class="chart-canvas-container">
+          <canvas id="generoChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Reportes 2 y 3: Tabla -->
       <div id="tableResult" style="display: none;"></div>
 
     </div>
@@ -100,24 +138,113 @@
 
   <script>
     const reportSelector = document.getElementById('reportSelector');
-    const runQueryBtn = document.getElementById('runQueryBtn');
-    const emptyState = document.getElementById('emptyState');
-    const loadingState = document.getElementById('loadingState');
-    const tableResult = document.getElementById('tableResult');
-    const sqlInput = document.getElementById('sqlInput');
+    const emptyState     = document.getElementById('emptyState');
+    const loadingState   = document.getElementById('loadingState');
+    const chartResult    = document.getElementById('chartResult');
+    const tableResult    = document.getElementById('tableResult');
 
-    // Función para construir la tabla HTML basándose en los datos
-    function renderTable(data) {
-      if (!data || data.length === 0) {
+    let chartInstance = null;
+
+    const REPORT_META = {
+      "2": { tag: "tag-join",  label: "JOIN",     titulo: "Cartelera — Películas y Cines",          sub: "Películas en cartelera con director, cine y horario (JOIN de 4 tablas)" },
+      "3": { tag: "tag-group", label: "GROUP BY",  titulo: "Funciones por Sucursal",                  sub: "Total de funciones y películas distintas agrupadas por cine (GROUP BY)" }
+    };
+
+    function showOnly(el) {
+      [emptyState, loadingState, chartResult, tableResult].forEach(e => {
+        e.style.display = 'none';
+      });
+      if (el === chartResult) {
+        el.style.display = 'block';
+      } else if (el === emptyState || el === loadingState) {
+        el.style.display = 'flex';
+      } else if (el) {
+        el.style.display = 'block';
+      }
+    }
+
+    function renderChart(data) {
+      const labels  = data.map(r => r.genero || r.Genero || Object.values(r)[0]);
+      const valores = data.map(r => r.total_peliculas ?? r['Total Peliculas'] ?? Object.values(r)[1]);
+
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+
+      const ctx = document.getElementById('generoChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Películas',
+            data: valores,
+            backgroundColor: [
+              'rgba(229,57,53,0.75)',
+              'rgba(66,165,245,0.75)',
+              'rgba(102,187,106,0.75)',
+              'rgba(255,167,38,0.75)',
+              'rgba(171,71,188,0.75)',
+              'rgba(38,198,218,0.75)',
+              'rgba(255,112,67,0.75)',
+              'rgba(236,64,122,0.75)',
+            ],
+            borderColor: [
+              '#e53935','#42a5f5','#66bb6a','#ffa726',
+              '#ab47bc','#26c6da','#ff7043','#ec407a',
+            ],
+            borderWidth: 2,
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.parsed.y} película${ctx.parsed.y !== 1 ? 's' : ''}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#8a8793', font: { family: 'DM Sans', size: 13 } },
+              grid:  { color: 'rgba(255,255,255,0.05)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#8a8793', stepSize: 1, font: { family: 'DM Sans', size: 13 } },
+              grid:  { color: 'rgba(255,255,255,0.05)' }
+            }
+          }
+        }
+      });
+
+      showOnly(chartResult);
+    }
+
+    function renderTable(data, reportId) {
+      if (!data || data.length === 0 || data[0].Mensaje) {
         tableResult.innerHTML = `
-          <div style="padding: 40px; text-align: center; color: var(--text-muted);">
-            <p>No se encontraron registros para esta consulta.</p>
+          <div style="padding:40px;text-align:center;color:var(--text-muted);">
+            <p>${data?.[0]?.Mensaje ?? 'No se encontraron registros.'}</p>
           </div>`;
+        showOnly(tableResult);
         return;
       }
 
+      const meta = REPORT_META[reportId] ?? {};
       const columns = Object.keys(data[0]);
-      let html = '<table class="data-table"><thead><tr>';
+
+      let html = `
+        <div style="padding:24px 24px 12px;">
+          <span class="report-tag ${meta.tag ?? ''}">${meta.label ?? ''}</span>
+          <h2 class="chart-title">${meta.titulo ?? ''}</h2>
+          <p class="chart-subtitle">${meta.sub ?? ''}</p>
+        </div>
+        <table class="data-table"><thead><tr>`;
 
       columns.forEach(col => {
         const label = col.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -135,77 +262,48 @@
       html += '</tbody></table>';
 
       tableResult.innerHTML = html;
+      showOnly(tableResult);
     }
 
-    // Mostrar u ocultar la caja de texto según el reporte elegido
-    reportSelector.addEventListener('change', () => {
-      if (reportSelector.value === 'libre') {
-        sqlInput.style.display = 'block';
-      } else {
-        sqlInput.style.display = 'none';
-      }
-    });
-
-    // Función principal para pedir datos a FastAPI
-    async function fetchData() {
-      const reportId = reportSelector.value;
-
-      if (!reportId) {
-        emptyState.style.display = 'flex';
-        loadingState.style.display = 'none';
-        tableResult.style.display = 'none';
-        return;
-      }
-
-      emptyState.style.display = 'none';
-      tableResult.style.display = 'none';
-      loadingState.style.display = 'flex';
+    async function fetchReporte(reportId) {
+      showOnly(loadingState);
 
       try {
-        let response;
-        let data;
+        const response = await fetch(`http://localhost:8000/api/reportes/${reportId}`);
+        const data = await response.json();
 
-        if (reportId === 'libre') {
-          // POST para la consulta libre
-          const queryText = sqlInput.value.trim();
-          if (!queryText) throw new Error("Escribe la consulta Sql antes de ejecutar.");
+        if (data?.[0]?.error_sql || data?.[0]?.error) {
+          throw new Error(data[0].error_sql ?? data[0].error);
+        }
 
-          response = await fetch(`http://localhost:8000/api/consulta-libre`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: queryText })
-          });
+        if (reportId === '1') {
+          renderChart(data);
         } else {
-          // GET para los reportes predefinidos
-          response = await fetch(`http://localhost:8000/api/reportes/${reportId}`);
+          renderTable(data, reportId);
         }
-
-        data = await response.json();
-
-        // Si el backend nos mandó un error de sintaxis SQL, lo lanzamos para mostrarlo
-        if (data && data.length > 0 && data[0].error_sql) {
-          throw new Error(data[0].error_sql);
-        }
-
-        renderTable(data);
-        loadingState.style.display = 'none';
-        tableResult.style.display = 'block';
-
       } catch (error) {
-        console.error("Error al ejecutar la consulta:", error);
-        loadingState.style.display = 'none';
-        tableResult.style.display = 'block';
         tableResult.innerHTML = `
-          <div style="padding: 40px; text-align: center; color: var(--red);">
-            <h3>Ocurrió un problema</h3>
-            <p style="font-family: monospace; background: rgba(229,57,53,0.1); padding: 10px; border-radius: 8px; margin-top: 10px;">${error.message}</p>
+          <div style="padding:40px;text-align:center;color:var(--red);">
+            <h3>Ocurrió un problema al conectar con el servidor</h3>
+            <p style="font-family:monospace;background:rgba(229,57,53,0.1);padding:10px;border-radius:8px;margin-top:10px;">
+              ${error.message}
+            </p>
           </div>`;
+        showOnly(tableResult);
       }
     }
 
-    // Eventos de los botones
-    runQueryBtn.addEventListener('click', fetchData);
+    reportSelector.addEventListener('change', () => {
+      const val = reportSelector.value;
+      if (!val) {
+        showOnly(emptyState);
+        return;
+      }
+      fetchReporte(val);
+    });
+
+    showOnly(emptyState);
   </script>
 </body>
 
-</html>}
+</html>
