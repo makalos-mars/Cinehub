@@ -31,9 +31,18 @@ CREATE TABLE opinion(
 );
 
 CREATE TABLE director(
-    correo VARCHAR(100) PRIMARY KEY, 
+    correo VARCHAR(100) PRIMARY KEY,
     nombre VARCHAR(100),
     guion TEXT
+);
+
+-- Tabla de autenticación separada del perfil.
+-- 'rol' indica en qué tabla buscar el perfil completo del usuario.
+-- En producción, 'contrasena' debe almacenarse como hash (bcrypt/argon2).
+CREATE TABLE credenciales (
+    correo      VARCHAR(100) PRIMARY KEY,
+    contrasena  VARCHAR(255) NOT NULL,
+    rol         VARCHAR(20)  NOT NULL CHECK (rol IN ('aficionado', 'critico', 'reportero', 'director'))
 );
 
 CREATE TABLE produccion(
@@ -279,3 +288,65 @@ INSERT INTO cartelera(id_pelicula, no_sucursal, horario_de_emision) VALUES
 (314, 14, '22:30:00'),
 (315, 15, '19:00:00'),
 (315, 1, '21:00:00');
+
+INSERT INTO credenciales (correo, contrasena, rol) VALUES
+('juanito@gmail.com',          'test1234', 'aficionado'),
+('laura_mtz@gmail.com',        'test1234', 'aficionado'),
+('carlos_rojas@gmail.com',     'test1234', 'aficionado'),
+('maria_garcia@gmail.com',     'test1234', 'aficionado'),
+('jorge_lopez@gmail.com',      'test1234', 'aficionado'),
+('ana_fernandez@gmail.com',    'test1234', 'aficionado'),
+('luis_sanchez@gmail.com',     'test1234', 'aficionado'),
+('paty_gomez@gmail.com',       'test1234', 'aficionado'),
+('roberto_ramirez@gmail.com',  'test1234', 'aficionado'),
+('veronica_flores@gmail.com',  'test1234', 'aficionado'),
+('fernando_morales@gmail.com', 'test1234', 'aficionado'),
+('andrea_castro@gmail.com',    'test1234', 'aficionado'),
+('ricardo_orozco@gmail.com',   'test1234', 'aficionado'),
+('paola_mendoza@gmail.com',    'test1234', 'aficionado'),
+('alejandro_navarro@gmail.com','test1234', 'aficionado'),
+('carlos_monsi@gmail.com',        'test1234', 'critico'),
+('maria_ibarguengoitia@gmail.com','test1234', 'critico'),
+('jorge_ayala@gmail.com',         'test1234', 'critico'),
+('fernando_rossi@gmail.com',      'test1234', 'critico'),
+('hadassa_hill@gmail.com',        'test1234', 'critico'),
+('leonardo_garcia@gmail.com',     'test1234', 'critico'),
+('lucia_carreras@gmail.com',      'test1234', 'critico'),
+('arturo_aguilar@gmail.com',      'test1234', 'critico'),
+('elisa_lozano@gmail.com',        'test1234', 'critico'),
+('rafael_azcona@gmail.com',       'test1234', 'critico'),
+('beatriz_garcia@gmail.com',      'test1234', 'critico'),
+('oscar_sanchez@gmail.com',       'test1234', 'critico'),
+('daniela_morales@gmail.com',     'test1234', 'critico'),
+('enrique_franco@gmail.com',      'test1234', 'critico'),
+('silvia_vargas@gmail.com',       'test1234', 'critico'),
+('jose_luis@gmail.com',              'test1234', 'reportero'),
+('maria_fernanda@tv.com',            'test1234', 'reportero'),
+('carlos_alberto@gmail.com',         'test1234', 'reportero'),
+('ana_silvia@azteca.com',            'test1234', 'reportero'),
+('javier_martinez@gmail.com',        'test1234', 'reportero'),
+('paulina_garcia@gmail.com',         'test1234', 'reportero'),
+('ricardo_sanchez@eluniversal.com',  'test1234', 'reportero'),
+('laura_limon@gmail.com',            'test1234', 'reportero'),
+('fernando_montes@televisa.com',     'test1234', 'reportero'),
+('carmen_ruiz@gmail.com',            'test1234', 'reportero'),
+('pedro_salinas@gmail.com',          'test1234', 'reportero'),
+('victor_manzana@gmail.com',         'test1234', 'reportero'),
+('daniel_velasco@gmail.com',         'test1234', 'reportero'),
+('martha_ortega@gmail.com',          'test1234', 'reportero'),
+('roberto_campos@gmail.com',         'test1234', 'reportero'),
+('alfonso_arau@gmail.com',          'test1234', 'director'),
+('roberto_gomez@gmail.com',         'test1234', 'director'),
+('xavier_robles@gmail.com',         'test1234', 'director'),
+('fernando_kalife@gmail.com',       'test1234', 'director'),
+('guillermo_del_toro@gmail.com',    'test1234', 'director'),
+('alejandro_inarritu@gmail.com',    'test1234', 'director'),
+('carlos_cuaron@gmail.com',         'test1234', 'director'),
+('amate_escalante@gmail.com',       'test1234', 'director'),
+('michelle_rodriguez@gmail.com',    'test1234', 'director'),
+('luis_estrada@gmail.com',          'test1234', 'director'),
+('emilio_portes@gmail.com',         'test1234', 'director'),
+('kenya_marquez@gmail.com',         'test1234', 'director'),
+('natalia_beristain@gmail.com',     'test1234', 'director'),
+('rigoberto_castaneda@gmail.com',   'test1234', 'director'),
+('jorge_michel@gmail.com',          'test1234', 'director');

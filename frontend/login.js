@@ -1,26 +1,6 @@
+// autenticación conectada a PostgreSQL vía FastAPI
 
-// autenticación con roles y validaciones
-
-
-// ── BASE DE DATOS SIMULADA 
-const DB_USERS = [
-  { id: 1, name: 'Carlos', lastName: 'Mendoza', email: 'aficionado@cinehub.mx', password: 'test1234', role: 'aficionado' },
-  { id: 2, name: 'Alejandra', lastName: 'Ríos', email: 'critico@cinehub.mx', password: 'test1234', role: 'critico' },
-  { id: 3, name: 'Roberto', lastName: 'Salinas', email: 'reportero@cinehub.mx', password: 'test1234', role: 'reportero' },
-  { id: 4, name: 'Patricia', lastName: 'Vega', email: 'director@cinehub.mx', password: 'test1234', role: 'director' },
-];
-
-// Registros guardados en sessionStorage
-function getRegisteredUsers() {
-  try { return JSON.parse(sessionStorage.getItem('cinehub_users') || '[]'); }
-  catch { return []; }
-}
-function saveRegisteredUsers(users) {
-  sessionStorage.setItem('cinehub_users', JSON.stringify(users));
-}
-function getAllUsers() {
-  return [...DB_USERS, ...getRegisteredUsers()];
-}
+const API = 'http://localhost:8000';
 
 // ── UTILIDADES ──
 const $ = id => document.getElementById(id);
@@ -32,7 +12,6 @@ function setError(fieldId, message) {
 function clearError(fieldId) { setError(fieldId, ''); }
 
 function setInputState(inputEl, state) {
-  // state: 'error' | 'success' | ''
   const wrap = inputEl.closest('.input-wrap');
   if (!wrap) return;
   wrap.classList.remove('error', 'success');
@@ -57,10 +36,6 @@ function setLoading(formType, loading) {
   btn.disabled = loading;
   text.style.display = loading ? 'none' : '';
   loader.style.display = loading ? 'flex' : 'none';
-}
-
-function simulateDelay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // ── TABS ──
@@ -91,7 +66,6 @@ document.querySelectorAll('.demo-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     $('loginEmail').value = btn.dataset.email;
     $('loginPassword').value = btn.dataset.pwd;
-    // Limpiar errores previos
     ['loginEmail', 'loginPassword'].forEach(id => {
       clearError(id + 'Error');
       setInputState($(id), '');
@@ -114,8 +88,7 @@ $('regEmail').addEventListener('input', function () {
 
   if (!email) return;
 
-  // Esperar 500ms para no verificar con cada tecla
-  emailCheckTimeout = setTimeout(() => {
+  emailCheckTimeout = setTimeout(async () => {
     if (!isValidEmail(email)) {
       setInputState($('regEmail'), 'error');
       setError('regEmailError', 'Ingresa un correo electrónico válido.');
@@ -124,12 +97,13 @@ $('regEmail').addEventListener('input', function () {
       return;
     }
 
-    // Simular verificación contra la base de datos
+    statusEl.textContent = '...';
     statusEl.style.color = 'var(--muted)';
 
-    setTimeout(() => {
-      const exists = getAllUsers().some(u => u.email.toLowerCase() === email.toLowerCase());
-      if (exists) {
+    try {
+      const res = await fetch(`${API}/api/auth/verificar-correo/${encodeURIComponent(email)}`);
+      const data = await res.json();
+      if (data.existe) {
         setInputState($('regEmail'), 'error');
         setError('regEmailError', 'Este correo ya está registrado. ¿Quieres iniciar sesión?');
         statusEl.textContent = '✗';
@@ -139,7 +113,9 @@ $('regEmail').addEventListener('input', function () {
         statusEl.textContent = '✓';
         statusEl.style.color = 'var(--success)';
       }
-    }, 400);
+    } catch {
+      statusEl.textContent = '';
+    }
   }, 500);
 });
 
@@ -162,8 +138,8 @@ function updateStrengthMeter(pwd) {
   if (/[^A-Za-z0-9]/.test(pwd)) score++;
 
   const configs = [
-    { color: 'weak', text: 'Muy débil' },
-    { color: 'weak', text: 'Débil' },
+    { color: 'weak',   text: 'Muy débil' },
+    { color: 'weak',   text: 'Débil' },
     { color: 'medium', text: 'Media' },
     { color: 'medium', text: 'Buena' },
     { color: 'strong', text: 'Fuerte' },
@@ -238,13 +214,6 @@ function validateRegisterForm() {
     setError('regEmailError', 'Ingresa un correo válido.');
     setInputState($('regEmail'), 'error');
     valid = false;
-  } else {
-    const exists = getAllUsers().some(u => u.email.toLowerCase() === email.toLowerCase());
-    if (exists) {
-      setError('regEmailError', 'Este correo ya está registrado.');
-      setInputState($('regEmail'), 'error');
-      valid = false;
-    }
   }
   if (!pwd) {
     setError('regPasswordError', 'La contraseña es obligatoria.');
@@ -263,46 +232,25 @@ function validateRegisterForm() {
   return valid;
 }
 
-// ── LÓGICA DE AUTENTICACIÓN ──
-
-// Mensajes de bienvenida por rol
+// ── MENSAJES DE BIENVENIDA POR ROL ──
 const ROLE_MESSAGES = {
   aficionado: { title: '¡Bienvenido, Aficionado!', desc: 'Disfruta tus recomendaciones personalizadas.' },
-  critico: { title: '¡Hola, Crítico!', desc: 'Tus reseñas esperan ser escritas.' },
-  reportero: { title: '¡Listo, Reportero!', desc: 'Cubre los últimos estrenos del cine mexicano.' },
-  director: { title: '¡Bienvenido, Director!', desc: 'Gestiona tus producciones desde el panel.' },
+  critico:    { title: '¡Hola, Crítico!',          desc: 'Tus reseñas esperan ser escritas.' },
+  reportero:  { title: '¡Listo, Reportero!',       desc: 'Cubre los últimos estrenos del cine mexicano.' },
+  director:   { title: '¡Bienvenido, Director!',   desc: 'Gestiona tus producciones desde el panel.' },
 };
 
 function showSuccessModal(user) {
-  const modal = $('successModal');
-  const title = $('successTitle');
-  const desc = $('successDesc');
-  const fill = $('progressFill');
   const msg = ROLE_MESSAGES[user.role] || { title: '¡Bienvenido!', desc: 'Redirigiendo...' };
+  $('successTitle').textContent = msg.title;
+  $('successDesc').textContent = msg.desc;
 
-  title.textContent = msg.title;
-  desc.textContent = msg.desc;
-  fill.style.width = '0%';
-
-  // modal.classList.add('open');
-
-  // Guardar sesión en sessionStorage
   sessionStorage.setItem('cinehub_session', JSON.stringify({
-    id: user.id,
-    name: user.name,
-    lastName: user.lastName,
-    email: user.email,
+    nombre: user.nombre,
+    correo: user.correo,
     role: user.role,
   }));
 
-  // // Animación de progreso → redirigir
-  // requestAnimationFrame(() => {
-  //   requestAnimationFrame(() => { fill.style.width = '100%'; });
-  // });
-
-  // setTimeout(() => {
-  //   window.location.href = 'dashboard.html';
-  // }, 2800);
   window.location.href = 'dashboard.html';
 }
 
@@ -313,28 +261,33 @@ $('loginForm').addEventListener('submit', async function (e) {
   if (!validateLoginForm()) return;
 
   setLoading('login', true);
-  // await simulateDelay(900); // Simula latencia del servidor
 
-  const email = $('loginEmail').value.trim().toLowerCase();
-  const pwd = $('loginPassword').value;
+  const correo = $('loginEmail').value.trim();
+  const contrasena = $('loginPassword').value;
 
-  const user = getAllUsers().find(
-    u => u.email.toLowerCase() === email && u.password === pwd
-  );
+  try {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ correo, contrasena })
+    });
+    const data = await res.json();
+    setLoading('login', false);
 
-  setLoading('login', false);
+    if (!data.ok) {
+      showMessage('loginMessage', data.mensaje || 'Correo o contraseña incorrectos.', 'error');
+      setInputState($('loginEmail'), 'error');
+      setInputState($('loginPassword'), 'error');
+      $('loginBtn').classList.add('shake');
+      setTimeout(() => $('loginBtn').classList.remove('shake'), 500);
+      return;
+    }
 
-  if (!user) {
-    showMessage('loginMessage', 'Correo o contraseña incorrectos. Verifica tus datos.', 'error');
-    setInputState($('loginEmail'), 'error');
-    setInputState($('loginPassword'), 'error');
-    // Sacudir el botón
-    $('loginBtn').classList.add('shake');
-    setTimeout(() => $('loginBtn').classList.remove('shake'), 500);
-    return;
+    showSuccessModal({ nombre: data.nombre, correo: data.correo, role: data.rol });
+  } catch {
+    setLoading('login', false);
+    showMessage('loginMessage', 'No se pudo conectar con el servidor. ¿Está corriendo el backend?', 'error');
   }
-
-  showSuccessModal(user);
 });
 
 // ── SUBMIT REGISTRO ──
@@ -344,43 +297,42 @@ $('registerForm').addEventListener('submit', async function (e) {
   if (!validateRegisterForm()) return;
 
   setLoading('register', true);
-  await simulateDelay(1100);
 
-  const name = $('regName').value.trim();
-  const lastName = $('regLastName').value.trim();
-  const email = $('regEmail').value.trim();
-  const pwd = $('regPassword').value;
-  const role = document.querySelector('input[name="userRole"]:checked').value;
+  const nombre = $('regName').value.trim();
+  const apellido = $('regLastName').value.trim();
+  const correo = $('regEmail').value.trim();
+  const contrasena = $('regPassword').value;
+  const rol = document.querySelector('input[name="userRole"]:checked').value;
 
-  // Volver a verificar por si acaso
-  const emailTaken = getAllUsers().some(u => u.email.toLowerCase() === email.toLowerCase());
-  if (emailTaken) {
+  try {
+    const res = await fetch(`${API}/api/auth/registro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, apellido, correo, contrasena, rol })
+    });
+    const data = await res.json();
     setLoading('register', false);
-    setError('regEmailError', 'Este correo ya está registrado.');
-    setInputState($('regEmail'), 'error');
-    return;
+
+    if (!data.ok) {
+      if (data.mensaje?.includes('correo')) {
+        setError('regEmailError', data.mensaje);
+        setInputState($('regEmail'), 'error');
+      } else {
+        showMessage('registerMessage', data.mensaje || 'Error al crear la cuenta.', 'error');
+      }
+      return;
+    }
+
+    showSuccessModal({ nombre: data.nombre, correo: data.correo, role: data.rol });
+  } catch {
+    setLoading('register', false);
+    showMessage('registerMessage', 'No se pudo conectar con el servidor. ¿Está corriendo el backend?', 'error');
   }
-
-  // Crear usuario
-  const newUser = {
-    id: Date.now(),
-    name, lastName, email,
-    password: pwd,
-    role,
-  };
-
-  const registered = getRegisteredUsers();
-  registered.push(newUser);
-  saveRegisteredUsers(registered);
-
-  setLoading('register', false);
-  showSuccessModal(newUser);
 });
 
 // ── INICIALIZACIÓN ──
 (function checkSession() {
-  const session = sessionStorage.getItem('cinehub_session');
-  if (session) {
+  if (sessionStorage.getItem('cinehub_session')) {
     window.location.href = 'dashboard.html';
   }
 })();
