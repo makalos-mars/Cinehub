@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 DB_CONFIG = {
-    "dbname": "cinemx_prototipo",
+    "dbname": "cinemx_proyectofinal",
     "user": "postgres",
     "password": "byemike24",
     "host": "localhost",
