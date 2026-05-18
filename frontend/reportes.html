@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CineHub - Panel de Reportes</title>
+  <title>CineMX - Panel de Reportes</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="reportes.css">
@@ -29,7 +29,11 @@
       margin-bottom: 15px;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     .chart-wrapper {
       display: none;
@@ -67,9 +71,20 @@
       margin-bottom: 8px;
     }
 
-    .tag-chart  { background: rgba(229,57,53,0.15); color: var(--red); }
-    .tag-join   { background: rgba(66,165,245,0.15); color: #42a5f5; }
-    .tag-group  { background: rgba(102,187,106,0.15); color: #66bb6a; }
+    .tag-chart {
+      background: rgba(229, 57, 53, 0.15);
+      color: var(--red);
+    }
+
+    .tag-join {
+      background: rgba(66, 165, 245, 0.15);
+      color: #42a5f5;
+    }
+
+    .tag-group {
+      background: rgba(102, 187, 106, 0.15);
+      color: #66bb6a;
+    }
   </style>
 </head>
 
@@ -79,10 +94,11 @@
     <div class="nav-brand">
       <div class="logo-icon">
         <svg viewBox="0 0 24 24">
-          <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
+          <path
+            d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
         </svg>
       </div>
-      <span class="logo-text">Cine<span>Hub</span> Reportes</span>
+      <span class="logo-text">Cine<span>MX</span> Reportes</span>
     </div>
     <a href="index.html" class="btn-back">Volver al inicio</a>
   </nav>
@@ -138,16 +154,16 @@
 
   <script>
     const reportSelector = document.getElementById('reportSelector');
-    const emptyState     = document.getElementById('emptyState');
-    const loadingState   = document.getElementById('loadingState');
-    const chartResult    = document.getElementById('chartResult');
-    const tableResult    = document.getElementById('tableResult');
+    const emptyState = document.getElementById('emptyState');
+    const loadingState = document.getElementById('loadingState');
+    const chartResult = document.getElementById('chartResult');
+    const tableResult = document.getElementById('tableResult');
 
     let chartInstance = null;
 
     const REPORT_META = {
-      "2": { tag: "tag-join",  label: "JOIN",     titulo: "Cartelera — Películas y Cines",          sub: "Películas en cartelera con director, cine y horario (JOIN de 4 tablas)" },
-      "3": { tag: "tag-group", label: "GROUP BY",  titulo: "Funciones por Sucursal",                  sub: "Total de funciones y películas distintas agrupadas por cine (GROUP BY)" }
+      "2": { tag: "tag-join", label: "JOIN", titulo: "Cartelera — Películas y Cines", sub: "Películas en cartelera con director, cine y horario (JOIN de 4 tablas)" },
+      "3": { tag: "tag-group", label: "GROUP BY", titulo: "Funciones por Sucursal", sub: "Total de funciones y películas distintas agrupadas por cine (GROUP BY)" }
     };
 
     function showOnly(el) {
@@ -164,7 +180,7 @@
     }
 
     function renderChart(data) {
-      const labels  = data.map(r => r.genero || r.Genero || Object.values(r)[0]);
+      const labels = data.map(r => r.genero || r.Genero || Object.values(r)[0]);
       const valores = data.map(r => r.total_peliculas ?? r['Total Peliculas'] ?? Object.values(r)[1]);
 
       if (chartInstance) {
@@ -191,8 +207,8 @@
               'rgba(236,64,122,0.75)',
             ],
             borderColor: [
-              '#e53935','#42a5f5','#66bb6a','#ffa726',
-              '#ab47bc','#26c6da','#ff7043','#ec407a',
+              '#e53935', '#42a5f5', '#66bb6a', '#ffa726',
+              '#ab47bc', '#26c6da', '#ff7043', '#ec407a',
             ],
             borderWidth: 2,
             borderRadius: 6,
@@ -211,12 +227,12 @@
           scales: {
             x: {
               ticks: { color: '#8a8793', font: { family: 'DM Sans', size: 13 } },
-              grid:  { color: 'rgba(255,255,255,0.05)' }
+              grid: { color: 'rgba(255,255,255,0.05)' }
             },
             y: {
               beginAtZero: true,
               ticks: { color: '#8a8793', stepSize: 1, font: { family: 'DM Sans', size: 13 } },
-              grid:  { color: 'rgba(255,255,255,0.05)' }
+              grid: { color: 'rgba(255,255,255,0.05)' }
             }
           }
         }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineHub - Mi Panel</title>
+    <title>CineMX - Mi Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
@@ -149,7 +149,7 @@
                         d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
                 </svg>
             </div>
-            <span class="logo-text">Cine<span>Hub</span></span>
+            <span class="logo-text">Cine<span>MX</span></span>
         </div>
 
         <nav class="sidebar-nav">
@@ -198,6 +198,14 @@
                                 d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
                         </svg>
                         <span>Reportes</span>
+                    </a></li>
+                <!-- Enlace a Perfil -->
+                <li><a href="perfil.html">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                        </svg>
+                        <span>Mi Perfil</span>
                     </a></li>
             </ul>
         </nav>
@@ -317,7 +325,7 @@
 
                 // Saludo
                 var greetEl = document.getElementById('userGreeting');
-                if (greetEl) greetEl.textContent = 'Hola, ' + user.name;
+                if (greetEl) greetEl.textContent = 'Hola, ' + user.nombre;
 
                 // Badge de rol
                 var roleEl = document.getElementById('userRoleBadge');
@@ -327,7 +335,7 @@
                 var avatarEl = document.getElementById('userAvatar');
                 if (avatarEl) {
                     avatarEl.style.cssText += 'display:grid;place-items:center;font-size:15px;font-weight:700;color:#f0ede8;font-family:"DM Sans",sans-serif;';
-                    avatarEl.textContent = (user.name || 'U')[0].toUpperCase();
+                    avatarEl.textContent = (user.nombre || 'U')[0].toUpperCase();
                 }
 
                 // Los links de reportes ya llevan query param, solo aseguramos que existan

@@ -165,6 +165,50 @@ def login(data: LoginData):
     except Exception as e:
         return {"ok": False, "mensaje": str(e)}
 
+@app.get("/api/auth/usuario/{correo}")
+def obtener_usuario(correo: str):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT correo, rol FROM credenciales WHERE correo = %s", (correo.lower(),))
+        cred = cursor.fetchone()
+        if not cred:
+            cursor.close(); conn.close()
+            return {"ok": False, "mensaje": "Usuario no encontrado."}
+        rol = cred["rol"]
+        cfg = TABLA_CONFIG[rol]
+        cursor.execute(f"SELECT * FROM {cfg['tabla']} WHERE {cfg['pk']} = %s", (correo.lower(),))
+        perfil = cursor.fetchone()
+        cursor.close(); conn.close()
+        if not perfil:
+            return {"ok": False, "mensaje": "Perfil no encontrado."}
+        return {"ok": True, "rol": rol, "perfil": dict(perfil)}
+    except Exception as e:
+        return {"ok": False, "mensaje": str(e)}
+
+@app.delete("/api/auth/usuario/{correo}")
+def eliminar_usuario(correo: str):
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT rol FROM credenciales WHERE correo = %s", (correo.lower(),))
+        cred = cursor.fetchone()
+        if not cred:
+            cursor.close(); conn.close()
+            return {"ok": False, "mensaje": "Usuario no encontrado."}
+        rol = cred["rol"]
+        cfg = TABLA_CONFIG[rol]
+        cursor.execute("DELETE FROM credenciales WHERE correo = %s", (correo.lower(),))
+        cursor.execute(f"DELETE FROM {cfg['tabla']} WHERE {cfg['pk']} = %s", (correo.lower(),))
+        conn.commit()
+        cursor.close(); conn.close()
+        return {"ok": True}
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return {"ok": False, "mensaje": "No se puede eliminar la cuenta porque tiene datos asociados en el sistema."}
+
 @app.post("/api/auth/registro")
 def registro(data: RegistroData):
     if data.rol not in TABLA_CONFIG:
