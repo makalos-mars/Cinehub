@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineHub - Panel de Reportes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="reportes.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    .loading-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 400px;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(229, 57, 53, 0.1);
+      border-left-color: var(--red);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .chart-wrapper {
+      display: none;
+      padding: 30px;
+    }
+
+    .chart-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 1px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .chart-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .chart-canvas-container {
+      position: relative;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .report-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .tag-chart  { background: rgba(229,57,53,0.15); color: var(--red); }
+    .tag-join   { background: rgba(66,165,245,0.15); color: #42a5f5; }
+    .tag-group  { background: rgba(102,187,106,0.15); color: #66bb6a; }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
+        </svg>
+      </div>
+      <span class="logo-text">Cine<span>Hub</span> Reportes</span>
+    </div>
+    <a href="index.html" class="btn-back">Volver al inicio</a>
+  </nav>
+
+  <main class="dashboard-container">
+    <header class="dashboard-header">
+      <div>
+        <h1 class="title">Panel de Reportes</h1>
+        <p class="subtitle">Selecciona un reporte para visualizar datos en tiempo real desde PostgreSQL</p>
+      </div>
+
+      <div class="controls">
+        <select id="reportSelector" class="report-selector">
+          <option value="">Selecciona un reporte...</option>
+          <option value="1">Reporte 1 — Películas por Género (Gráfica)</option>
+          <option value="2">Reporte 2 — Cartelera con Películas y Cines (JOIN)</option>
+          <option value="3">Reporte 3 — Funciones por Sucursal (GROUP BY)</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="table-container">
+
+      <div id="emptyState" class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+        <h3>Esperando selección...</h3>
+        <p>Elige un reporte del menú superior para consultar la base de datos.</p>
+      </div>
+
+      <div id="loadingState" class="loading-state">
+        <div class="spinner"></div>
+        <p>Consultando a PostgreSQL...</p>
+      </div>
+
+      <!-- Reporte 1: Gráfica -->
+      <div id="chartResult" class="chart-wrapper">
+        <span class="report-tag tag-chart">Gráfica</span>
+        <h2 class="chart-title">Películas por Género</h2>
+        <p class="chart-subtitle">Distribución del catálogo según género cinematográfico</p>
+        <div class="chart-canvas-container">
+          <canvas id="generoChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Reportes 2 y 3: Tabla -->
+      <div id="tableResult" style="display: none;"></div>
+
+    </div>
+  </main>
+
+  <script>
+    const reportSelector = document.getElementById('reportSelector');
+    const emptyState     = document.getElementById('emptyState');
+    const loadingState   = document.getElementById('loadingState');
+    const chartResult    = document.getElementById('chartResult');
+    const tableResult    = document.getElementById('tableResult');
+
+    let chartInstance = null;
+
+    const REPORT_META = {
+      "2": { tag: "tag-join",  label: "JOIN",     titulo: "Cartelera — Películas y Cines",          sub: "Películas en cartelera con director, cine y horario (JOIN de 4 tablas)" },
+      "3": { tag: "tag-group", label: "GROUP BY",  titulo: "Funciones por Sucursal",                  sub: "Total de funciones y películas distintas agrupadas por cine (GROUP BY)" }
+    };
+
+    function showOnly(el) {
+      [emptyState, loadingState, chartResult, tableResult].forEach(e => {
+        e.style.display = 'none';
+      });
+      if (el === chartResult) {
+        el.style.display = 'block';
+      } else if (el === emptyState || el === loadingState) {
+        el.style.display = 'flex';
+      } else if (el) {
+        el.style.display = 'block';
+      }
+    }
+
+    function renderChart(data) {
+      const labels  = data.map(r => r.genero || r.Genero || Object.values(r)[0]);
+      const valores = data.map(r => r.total_peliculas ?? r['Total Peliculas'] ?? Object.values(r)[1]);
+
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+
+      const ctx = document.getElementById('generoChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Películas',
+            data: valores,
+            backgroundColor: [
+              'rgba(229,57,53,0.75)',
+              'rgba(66,165,245,0.75)',
+              'rgba(102,187,106,0.75)',
+              'rgba(255,167,38,0.75)',
+              'rgba(171,71,188,0.75)',
+              'rgba(38,198,218,0.75)',
+              'rgba(255,112,67,0.75)',
+              'rgba(236,64,122,0.75)',
+            ],
+            borderColor: [
+              '#e53935','#42a5f5','#66bb6a','#ffa726',
+              '#ab47bc','#26c6da','#ff7043','#ec407a',
+            ],
+            borderWidth: 2,
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.parsed.y} película${ctx.parsed.y !== 1 ? 's' : ''}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#8a8793', font: { family: 'DM Sans', size: 13 } },
+              grid:  { color: 'rgba(255,255,255,0.05)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#8a8793', stepSize: 1, font: { family: 'DM Sans', size: 13 } },
+              grid:  { color: 'rgba(255,255,255,0.05)' }
+            }
+          }
+        }
+      });
+
+      showOnly(chartResult);
+    }
+
+    function renderTable(data, reportId) {
+      if (!data || data.length === 0 || data[0].Mensaje) {
+        tableResult.innerHTML = `
+          <div style="padding:40px;text-align:center;color:var(--text-muted);">
+            <p>${data?.[0]?.Mensaje ?? 'No se encontraron registros.'}</p>
+          </div>`;
+        showOnly(tableResult);
+        return;
+      }
+
+      const meta = REPORT_META[reportId] ?? {};
+      const columns = Object.keys(data[0]);
+
+      let html = `
+        <div style="padding:24px 24px 12px;">
+          <span class="report-tag ${meta.tag ?? ''}">${meta.label ?? ''}</span>
+          <h2 class="chart-title">${meta.titulo ?? ''}</h2>
+          <p class="chart-subtitle">${meta.sub ?? ''}</p>
+        </div>
+        <table class="data-table"><thead><tr>`;
+
+      columns.forEach(col => {
+        const label = col.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        html += `<th>${label}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      data.forEach(row => {
+        html += '<tr>';
+        columns.forEach(col => {
+          html += `<td>${row[col] !== null ? row[col] : '-'}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      tableResult.innerHTML = html;
+      showOnly(tableResult);
+    }
+
+    async function fetchReporte(reportId) {
+      showOnly(loadingState);
+
+      try {
+        const response = await fetch(`http://localhost:8000/api/reportes/${reportId}`);
+        const data = await response.json();
+
+        if (data?.[0]?.error_sql || data?.[0]?.error) {
+          throw new Error(data[0].error_sql ?? data[0].error);
+        }
+
+        if (reportId === '1') {
+          renderChart(data);
+        } else {
+          renderTable(data, reportId);
+        }
+      } catch (error) {
+        tableResult.innerHTML = `
+          <div style="padding:40px;text-align:center;color:var(--red);">
+            <h3>Ocurrió un problema al conectar con el servidor</h3>
+            <p style="font-family:monospace;background:rgba(229,57,53,0.1);padding:10px;border-radius:8px;margin-top:10px;">
+              ${error.message}
+            </p>
+          </div>`;
+        showOnly(tableResult);
+      }
+    }
+
+    reportSelector.addEventListener('change', () => {
+      const val = reportSelector.value;
+      if (!val) {
+        showOnly(emptyState);
+        return;
+      }
+      fetchReporte(val);
+    });
+
+    showOnly(emptyState);
+  </script>
+</body>
+
+</html>
