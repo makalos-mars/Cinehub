@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineHub — El cine mexicano en un solo lugar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── CATÁLOGO SHOWCASE ── */
+    .catalog-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+
+    .catalog-tab {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .catalog-tab:hover {
+      color: var(--text);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .catalog-tab.active, .catalog-tab[data-active] {
+      background: var(--red);
+      color: white;
+      border-color: var(--red);
+      box-shadow: 0 4px 18px rgba(229,57,53,0.35);
+    }
+
+    /* ── GRID DE TARJETAS ── */
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 18px;
+    }
+
+    .movie-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      text-decoration: none;
+      display: block;
+    }
+
+    .movie-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      border-color: rgba(229,57,53,0.3);
+    }
+
+    .movie-poster {
+      aspect-ratio: 2/3;
+      background: var(--bg3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .movie-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+
+    .movie-card:hover .movie-poster img {
+      transform: scale(1.06);
+    }
+
+    .movie-poster-placeholder {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #1a1a1e 0%, #0f0f12 100%);
+    }
+
+    .movie-poster-placeholder svg {
+      width: 48px;
+      height: 48px;
+      opacity: 0.2;
+      fill: var(--red);
+    }
+
+    .movie-type-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 7px;
+      border-radius: 4px;
+    }
+
+    .badge-pelicula   { background: rgba(229,57,53,0.85); color: white; }
+    .badge-documental { background: rgba(66,165,245,0.85); color: white; }
+    .badge-serie      { background: rgba(102,187,106,0.85); color: white; }
+
+    .movie-info {
+      padding: 14px;
+    }
+
+    .movie-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .movie-meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .movie-genre {
+      background: rgba(255,255,255,0.06);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, #26262b 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 12px;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .skeleton-poster {
+      aspect-ratio: 2/3;
+    }
+
+    .skeleton-info {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .skeleton-line {
+      height: 12px;
+      border-radius: 4px;
+    }
+
+    /* ── ACCESOS RÁPIDOS ── */
+    .quick-access {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 60px;
+    }
+
+    .qa-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 24px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .qa-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .qa-card.qa-movies::before  { background: radial-gradient(ellipse 80% 60% at 0% 100%, rgba(229,57,53,0.12) 0%, transparent 60%); }
+    .qa-card.qa-docs::before    { background: radial-gradient(ellipse 80% 60% at 0% 100%, rgba(66,165,245,0.12) 0%, transparent 60%); }
+    .qa-card.qa-series::before  { background: radial-gradient(ellipse 80% 60% at 0% 100%, rgba(102,187,106,0.12) 0%, transparent 60%); }
+
+    .qa-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+    }
+
+    .qa-card:hover::before { opacity: 1; }
+    .qa-card:hover { border-color: rgba(255,255,255,0.15); }
+
+    .qa-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .qa-icon svg { width: 26px; height: 26px; }
+
+    .qa-movies .qa-icon  { background: rgba(229,57,53,0.15); color: var(--red); }
+    .qa-docs .qa-icon    { background: rgba(66,165,245,0.15); color: #42a5f5; }
+    .qa-series .qa-icon  { background: rgba(102,187,106,0.15); color: #66bb6a; }
+
+    .qa-text {}
+    .qa-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .qa-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: var(--text);
+    }
+
+    .qa-count {
+      margin-left: auto;
+      font-size: 28px;
+      font-family: 'Bebas Neue', sans-serif;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    /* ── EMPTY STATE ── */
+    .grid-empty {
+      grid-column: 1 / -1;
+      padding: 60px;
+      text-align: center;
+      color: var(--muted);
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+    }
+
+    .grid-empty svg {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @media (max-width: 768px) {
+      .quick-access { grid-template-columns: 1fr; }
+      .movies-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+
+    @media (max-width: 480px) {
+      .movies-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z"/></svg>
+      </div>
+      <span class="logo-text">Cine<span>Hub</span></span>
+    </a>
+
+    <ul class="nav-links">
+      <li>
+        <a href="catalogo.html?tipo=pelicula">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg>
+          Películas
+        </a>
+      </li>
+      <li>
+        <a href="catalogo.html?tipo=documental">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/></svg>
+          Documentales
+        </a>
+      </li>
+      <li>
+        <a href="catalogo.html?tipo=serie">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+          Series
+        </a>
+      </li>
+      <li>
+        <a href="reportes.html">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          Reportes
+        </a>
+      </li>
+    </ul>
+
+    <div class="nav-right">
+      <button class="btn-search" id="searchBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Buscar
+      </button>
+      <a href="login.html" class="btn-cta" id="navAuthBtn">Mi cuenta</a>
+    </div>
+
+    <button class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MENÚ MÓVIL -->
+  <div class="mobile-menu" id="mobileMenu">
+    <ul>
+      <li><a href="catalogo.html?tipo=pelicula">🎬 Películas</a></li>
+      <li><a href="catalogo.html?tipo=documental">🎥 Documentales</a></li>
+      <li><a href="catalogo.html?tipo=serie">📺 Series</a></li>
+      <li><a href="reportes.html">📊 Reportes</a></li>
+      <li><a href="login.html">👤 Mi cuenta</a></li>
+    </ul>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-noise"></div>
+    <div class="hero-gradient-bottom"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="var(--red)"><circle cx="6" cy="6" r="6"/></svg>
+        Conectado a PostgreSQL en tiempo real
+      </div>
+      <h1>El cine <em>mexicano</em><br/>en un solo lugar</h1>
+      <p>Explora, califica y descubre películas, documentales y series. Gestiona el catálogo directamente desde la base de datos.</p>
+      <a href="#catalogo" class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        Ver catálogo
+      </a>
+    </div>
+  </section>
+
+  <!-- ACCESOS RÁPIDOS -->
+  <section style="padding: 60px 5% 0;">
+    <div class="quick-access" id="quickAccess">
+      <a href="catalogo.html?tipo=pelicula" class="qa-card qa-movies">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg>
+        </div>
+        <div class="qa-text">
+          <div class="qa-label">Gestionar</div>
+          <div class="qa-title">Películas</div>
+        </div>
+        <span class="qa-count" id="countPeliculas">—</span>
+      </a>
+
+      <a href="catalogo.html?tipo=documental" class="qa-card qa-docs">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <div class="qa-text">
+          <div class="qa-label">Gestionar</div>
+          <div class="qa-title">Documentales</div>
+        </div>
+        <span class="qa-count" id="countDocumentales">—</span>
+      </a>
+
+      <a href="catalogo.html?tipo=serie" class="qa-card qa-series">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+        </div>
+        <div class="qa-text">
+          <div class="qa-label">Gestionar</div>
+          <div class="qa-title">Series</div>
+        </div>
+        <span class="qa-count" id="countSeries">—</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- CATÁLOGO PRINCIPAL -->
+  <section id="catalogo" style="padding: 40px 5% 80px;">
+    <header class="section-header" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
+      <div>
+        <p class="section-label">Base de datos en vivo</p>
+        <h2 class="section-title">Catálogo</h2>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span id="catalogCount" style="font-size:13px; color:var(--muted);"></span>
+      </div>
+    </header>
+
+    <!-- Tabs de filtro -->
+    <div class="catalog-nav">
+      <button class="catalog-tab active" data-tipo="">Todos</button>
+      <button class="catalog-tab" data-tipo="pelicula">🎬 Películas</button>
+      <button class="catalog-tab" data-tipo="documental">🎥 Documentales</button>
+      <button class="catalog-tab" data-tipo="serie">📺 Series</button>
+    </div>
+
+    <!-- Grid -->
+    <div class="movies-grid" id="moviesGrid">
+      <!-- Skeletons mientras carga -->
+      ${Array.from({length: 8}).map(() => `
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-poster"></div>
+          <div class="skeleton-info">
+            <div class="skeleton skeleton-line" style="width:80%;"></div>
+            <div class="skeleton skeleton-line" style="width:50%;"></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="text-decoration:none;">
+          <div class="logo-icon" style="width:28px;height:28px;"><svg viewBox="0 0 24 24"><path fill="white" d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z"/></svg></div>
+          <span class="logo-text" style="font-size:20px;">Cine<span>Hub</span></span>
+        </a>
+        <p>El catálogo del cine mexicano, conectado a PostgreSQL en tiempo real.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 CineHub — Proyecto académico</p>
+    </div>
+  </footer>
+
+  <!-- SEARCH MODAL -->
+  <div class="search-modal" id="searchModal">
+    <button class="search-close" id="searchClose">Cerrar ✕</button>
+    <div class="search-input-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Buscar película, documental o serie..." id="searchInput" />
+    </div>
+    <div class="movies-grid" id="searchResults" style="max-width:900px; width:100%; margin-top:32px;"></div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    const API = 'http://localhost:8000';
+
+    // ── Auth nav button ──
+    (function() {
+      const session = sessionStorage.getItem('cinehub_session');
+      const btn = document.getElementById('navAuthBtn');
+      if (session) {
+        try {
+          const u = JSON.parse(session);
+          btn.textContent = u.nombre || 'Mi panel';
+          btn.href = 'dashboard.html';
+        } catch(e) {}
+      }
+    })();
+
+    // ── Render card ──
+    function renderCard(item) {
+      const typeClass = { pelicula: 'badge-pelicula', documental: 'badge-documental', serie: 'badge-serie' };
+      const typeLabel = { pelicula: 'Película', documental: 'Documental', serie: 'Serie' };
+      const poster = item.imagen_url
+        ? `<img src="${item.imagen_url}" alt="${item.titulo}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'movie-poster-placeholder\\'><svg viewBox=\\'0 0 24 24\\'><path d=\\'M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z\\'/></svg></div>'"/>`
+        : `<div class="movie-poster-placeholder"><svg viewBox="0 0 24 24"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg></div>`;
+
+      return `
+        <a href="catalogo.html?tipo=${item.tipo}&id=${item.id_pelicula}" class="movie-card">
+          <div class="movie-poster">
+            ${poster}
+            <span class="movie-type-badge ${typeClass[item.tipo] || 'badge-pelicula'}">${typeLabel[item.tipo] || item.tipo}</span>
+          </div>
+          <div class="movie-info">
+            <div class="movie-title">${item.titulo}</div>
+            <div class="movie-meta">
+              <span class="movie-genre">${item.genero || '—'}</span>
+              ${item.anio ? `<span>${item.anio}</span>` : ''}
+            </div>
+          </div>
+        </a>`;
+    }
+
+    function renderSkeletons(count = 8) {
+      return Array.from({length: count}).map(() => `
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-poster"></div>
+          <div class="skeleton-info">
+            <div class="skeleton skeleton-line" style="width:80%;"></div>
+            <div class="skeleton skeleton-line" style="width:50%;"></div>
+          </div>
+        </div>`).join('');
+    }
+
+    // ── Cargar catálogo ──
+    let allItems = [];
+
+    async function loadCatalog(tipo = '') {
+      const grid = document.getElementById('moviesGrid');
+      grid.innerHTML = renderSkeletons();
+
+      try {
+        const url = tipo ? `${API}/api/catalogo?tipo=${tipo}` : `${API}/api/catalogo`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error) throw new Error(data.error);
+
+        allItems = Array.isArray(data) ? data : [];
+        grid.innerHTML = allItems.length
+          ? allItems.map(renderCard).join('')
+          : `<div class="grid-empty">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg>
+              <p>No hay registros de este tipo en la base de datos.</p>
+              <a href="catalogo.html?tipo=${tipo || 'pelicula'}" style="color:var(--red);margin-top:10px;display:inline-block;font-size:13px;">+ Agregar desde el catálogo</a>
+             </div>`;
+
+        document.getElementById('catalogCount').textContent =
+          allItems.length ? `${allItems.length} registro${allItems.length !== 1 ? 's' : ''}` : '';
+      } catch(e) {
+        grid.innerHTML = `<div class="grid-empty">
+          <p style="color:var(--red);">No se pudo conectar con el servidor.<br/><small>${e.message}</small></p>
+        </div>`;
+      }
+    }
+
+    // ── Contadores ──
+    async function loadCounts() {
+      try {
+        const res = await fetch(`${API}/api/catalogo`);
+        const data = await res.json();
+        if (!Array.isArray(data)) return;
+
+        const counts = { pelicula: 0, documental: 0, serie: 0 };
+        data.forEach(item => { if (counts[item.tipo] !== undefined) counts[item.tipo]++; });
+
+        document.getElementById('countPeliculas').textContent   = counts.pelicula;
+        document.getElementById('countDocumentales').textContent = counts.documental;
+        document.getElementById('countSeries').textContent       = counts.serie;
+      } catch(e) { /* silencioso */ }
+    }
+
+    // ── Tabs ──
+    document.querySelectorAll('.catalog-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.catalog-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        loadCatalog(tab.dataset.tipo);
+      });
+    });
+
+    // ── Búsqueda ──
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      const q = this.value.trim();
+      const results = document.getElementById('searchResults');
+
+      if (!q) { results.innerHTML = ''; return; }
+
+      searchTimeout = setTimeout(async () => {
+        results.innerHTML = renderSkeletons(4);
+        try {
+          const res = await fetch(`${API}/api/catalogo?q=${encodeURIComponent(q)}`);
+          const data = await res.json();
+          results.innerHTML = Array.isArray(data) && data.length
+            ? data.map(renderCard).join('')
+            : `<div class="grid-empty" style="grid-column:1/-1;"><p>Sin resultados para "${q}"</p></div>`;
+        } catch(e) {
+          results.innerHTML = `<div class="grid-empty" style="grid-column:1/-1;"><p style="color:var(--red);">Error de conexión</p></div>`;
+        }
+      }, 350);
+    });
+
+    // ── Iniciar ──
+    loadCatalog();
+    loadCounts();
+  </script>
+</body>
+</html>
