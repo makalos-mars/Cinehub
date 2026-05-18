@@ -61,19 +61,6 @@ document.querySelectorAll('.toggle-pwd').forEach(btn => {
   });
 });
 
-// ── BOTONES DEMO ──
-document.querySelectorAll('.demo-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    $('loginEmail').value = btn.dataset.email;
-    $('loginPassword').value = btn.dataset.pwd;
-    ['loginEmail', 'loginPassword'].forEach(id => {
-      clearError(id + 'Error');
-      setInputState($(id), '');
-    });
-    clearMessage('loginMessage');
-  });
-});
-
 // ── VERIFICACIÓN DE EMAIL EN TIEMPO REAL (Registro) ──
 let emailCheckTimeout = null;
 

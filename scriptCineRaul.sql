@@ -1,4 +1,6 @@
 
+SET client_encoding = 'UTF8';
+
 CREATE TABLE aficionado(
     correo_aficionado VARCHAR(100) PRIMARY KEY, 
     nombre VARCHAR(100), 
