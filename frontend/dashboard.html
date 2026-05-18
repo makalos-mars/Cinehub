@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineMX - Mi Panel</title>
+    <title>CineHub - Mi Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
@@ -199,14 +199,6 @@
                         </svg>
                         <span>Reportes</span>
                     </a></li>
-                <!-- Enlace a Perfil -->
-                <li><a href="perfil.html">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-                        </svg>
-                        <span>Mi Perfil</span>
-                    </a></li>
             </ul>
         </nav>
 
@@ -325,7 +317,7 @@
 
                 // Saludo
                 var greetEl = document.getElementById('userGreeting');
-                if (greetEl) greetEl.textContent = 'Hola, ' + user.nombre;
+                if (greetEl) greetEl.textContent = 'Hola, ' + user.name;
 
                 // Badge de rol
                 var roleEl = document.getElementById('userRoleBadge');
@@ -335,7 +327,7 @@
                 var avatarEl = document.getElementById('userAvatar');
                 if (avatarEl) {
                     avatarEl.style.cssText += 'display:grid;place-items:center;font-size:15px;font-weight:700;color:#f0ede8;font-family:"DM Sans",sans-serif;';
-                    avatarEl.textContent = (user.nombre || 'U')[0].toUpperCase();
+                    avatarEl.textContent = (user.name || 'U')[0].toUpperCase();
                 }
 
                 // Los links de reportes ya llevan query param, solo aseguramos que existan

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineHub — Catálogo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    /* ── VARIABLES EXTRA ── */
+    :root {
+      --blue: #42a5f5;
+      --green: #66bb6a;
+      --orange: #ffa726;
+      --red: #e53935;
+    }
+
+    /* ── TABS DE ENTIDAD ── */
+    .entity-tabs {
+      display: flex; gap: 6px; margin-bottom: 28px;
+      border-bottom: 1px solid var(--border); padding-bottom: 0;
+    }
+    .entity-tab {
+      background: none; border: none; color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+      padding: 10px 20px; cursor: pointer; border-radius: 8px 8px 0 0;
+      border-bottom: 2px solid transparent; transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .entity-tab.active { color: var(--red); border-bottom-color: var(--red); background: rgba(229,57,53,0.06); }
+    .entity-tab:hover:not(.active) { color: var(--text); background: var(--surface); }
+    .entity-tab svg { width: 16px; height: 16px; }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+    }
+    .toolbar-left { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .search-input {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text);
+      padding: 9px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; outline: none; width: 240px; transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: rgba(229,57,53,0.4); }
+    .filter-select {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text);
+      padding: 9px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; outline: none; cursor: pointer;
+    }
+    .btn-nuevo {
+      background: var(--red); color: white; border: none;
+      padding: 9px 18px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer; display: flex;
+      align-items: center; gap: 7px; transition: background 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .btn-nuevo:hover { background: #f44336; transform: translateY(-1px); }
+    .btn-nuevo svg { width: 16px; height: 16px; }
+
+    /* ── TABLA ── */
+    .table-wrap {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; overflow-x: auto; min-height: 300px;
+    }
+    .data-table {
+      width: 100%; border-collapse: collapse; text-align: left; min-width: 700px;
+    }
+    .data-table th {
+      background: rgba(0,0,0,0.25); padding: 14px 18px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 13px 18px; font-size: 14px; color: var(--text);
+      border-bottom: 1px solid var(--border); vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr { transition: background 0.15s; }
+    .data-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 9px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-pelicula  { background: rgba(229,57,53,0.15);  color: var(--red); }
+    .badge-serie     { background: rgba(66,165,245,0.15); color: var(--blue); }
+    .badge-documental{ background: rgba(102,187,106,0.15);color: var(--green); }
+
+    /* ── ACCIONES DE FILA ── */
+    .row-actions { display: flex; gap: 6px; }
+    .btn-edit, .btn-delete {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      cursor: pointer; padding: 5px 10px; font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 600; transition: all 0.2s; display: flex;
+      align-items: center; gap: 5px;
+    }
+    .btn-edit { color: var(--blue); }
+    .btn-edit:hover { background: rgba(66,165,245,0.1); border-color: var(--blue); }
+    .btn-delete { color: var(--red); }
+    .btn-delete:hover { background: rgba(229,57,53,0.1); border-color: var(--red); }
+    .btn-edit svg, .btn-delete svg { width: 13px; height: 13px; }
+
+    /* ── ESTADO VACÍO / CARGANDO ── */
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--text-muted);
+    }
+    .empty-state svg { width: 44px; height: 44px; opacity: 0.4; margin-bottom: 14px; }
+    .empty-state p { font-size: 14px; }
+    .loading-row td {
+      text-align: center; padding: 60px; color: var(--text-muted); font-size: 14px;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(12px); z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-card {
+      background: #1c1c20; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 36px 32px; width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+      transform: translateY(16px) scale(0.98);
+      transition: transform 0.3s cubic-bezier(.22,1,.36,1);
+    }
+    .modal-overlay.open .modal-card { transform: translateY(0) scale(1); }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 26px;
+    }
+    .modal-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px;
+    }
+    .modal-close {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 22px; line-height: 1; transition: color 0.2s; padding: 4px;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    /* ── FORM DENTRO DEL MODAL ── */
+    .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+    .form-group label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.7px; color: var(--text-muted);
+    }
+    .form-control {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text); padding: 10px 13px; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus { border-color: rgba(229,57,53,0.4); }
+    textarea.form-control { resize: vertical; min-height: 80px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-footer {
+      display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px;
+    }
+    .btn-cancel-modal {
+      background: var(--surface); color: var(--text); border: 1px solid var(--border);
+      padding: 10px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-cancel-modal:hover { background: rgba(255,255,255,0.08); }
+    .btn-save {
+      background: var(--red); color: white; border: none;
+      padding: 10px 24px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-save:hover { background: #f44336; }
+    .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 999;
+      background: #1c1c20; border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 20px;
+      font-size: 14px; font-weight: 500; color: var(--text);
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      transform: translateY(20px); opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-left: 3px solid var(--green); }
+    .toast.error   { border-left: 3px solid var(--red); }
+    .toast-icon { font-size: 18px; }
+
+    /* ── CONTADOR ── */
+    .record-count {
+      font-size: 13px; color: var(--text-muted); font-weight: 500;
+    }
+    .record-count span { color: var(--text); font-weight: 700; }
+
+    /* ── NAV EXTRA LINKS ── */
+    .home-link {
+      display: flex; align-items: center; gap: 7px; color: var(--text-muted);
+      text-decoration: none; font-size: 13px; font-weight: 500; padding: 8px 12px;
+      border-radius: 7px; transition: all 0.2s; margin-bottom: 4px;
+      border: 1px solid transparent;
+    }
+    .home-link:hover { color: var(--text); background: var(--surface); border-color: var(--border); }
+    .home-link svg { width: 16px; height: 16px; }
+    .user-role-badge {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      padding: 3px 8px; border-radius: 4px;
+      background: rgba(229,57,53,0.15); border: 1px solid rgba(229,57,53,0.3); color: #ff6b6b;
+    }
+
+    /* Modal de confirmación eliminación */
+    .confirm-modal .modal-card { max-width: 380px; text-align: center; }
+    .confirm-icon {
+      width: 52px; height: 52px; background: rgba(229,57,53,0.12);
+      border-radius: 50%; display: grid; place-items: center; margin: 0 auto 16px;
+    }
+    .confirm-icon svg { width: 24px; height: 24px; color: var(--red); }
+    .confirm-modal h3 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; margin-bottom: 8px; }
+    .confirm-modal p  { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
+    .confirm-actions  { display: flex; gap: 10px; justify-content: center; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z"/></svg>
+    </div>
+    <span class="logo-text">Cine<span>Hub</span></span>
+  </div>
+  <nav class="sidebar-nav">
+    <ul>
+      <li><a href="index.html" class="home-link">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Inicio</span>
+      </a></li>
+      <li><a href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg>
+        <span>Mi Panel</span>
+      </a></li>
+      <li><a href="catalogo.html" class="active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+        <span>Catálogo</span>
+      </a></li>
+      <li><a href="reportes.html">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        <span>Reportes</span>
+      </a></li>
+      <li><a href="perfil.html">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+        <span>Mi Perfil</span>
+      </a></li>
+    </ul>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="#" class="logout-link" id="logoutBtn">Cerrar sesión</a>
+  </div>
+</aside>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main class="main-content">
+  <header class="top-bar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="text" placeholder="Buscar en el catálogo..." id="globalSearch">
+    </div>
+    <div class="user-profile">
+      <span id="userGreeting">Catálogo</span>
+      <div class="avatar" id="userAvatar"></div>
+      <span class="user-role-badge" id="userRoleBadge"></span>
+    </div>
+  </header>
+
+  <section class="dashboard-section">
+    <h2 class="section-title">Gestión del Catálogo</h2>
+
+    <!-- TABS DE ENTIDAD -->
+    <div class="entity-tabs">
+      <button class="entity-tab active" data-entity="peliculas">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg>
+        Películas
+      </button>
+      <button class="entity-tab" data-entity="series">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+        Series
+      </button>
+      <button class="entity-tab" data-entity="documentales">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        Documentales
+      </button>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" class="search-input" id="tableSearch" placeholder="Filtrar en tabla..." />
+        <select class="filter-select" id="generoFilter">
+          <option value="">Todos los géneros</option>
+        </select>
+        <span class="record-count">Total: <span id="recordCount">0</span></span>
+      </div>
+      <button class="btn-nuevo" id="btnNuevo">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Nuevo registro
+      </button>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead id="tableHead"><tr><th>Cargando...</th></tr></thead>
+        <tbody id="tableBody">
+          <tr class="loading-row"><td colspan="10">Conectando con PostgreSQL...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<!-- MODAL FORMULARIO -->
+<div class="modal-overlay" id="formModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle">Nueva Película</h3>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div id="modalFormBody"><!-- Generado dinámicamente --></div>
+    <div class="modal-footer">
+      <button class="btn-cancel-modal" id="btnCancelModal">Cancelar</button>
+      <button class="btn-save" id="btnSaveModal">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMACIÓN ELIMINACIÓN -->
+<div class="modal-overlay confirm-modal" id="confirmModal">
+  <div class="modal-card">
+    <div class="confirm-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+      </svg>
+    </div>
+    <h3>¿Eliminar registro?</h3>
+    <p id="confirmText">Esta acción no se puede deshacer.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel-modal" id="btnCancelDelete">Cancelar</button>
+      <button class="btn-save" style="background: var(--red);" id="btnConfirmDelete">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">✓</span>
+  <span id="toastMsg">Operación exitosa</span>
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+
+// ── SESIÓN ──────────────────────────────────────────────────────────
+const sessionData = sessionStorage.getItem('cinehub_session');
+if (!sessionData) window.location.href = 'login.html';
+const session = JSON.parse(sessionData || '{}');
+
+const ROL_LABELS = { aficionado:'Aficionado', critico:'Crítico', reportero:'Reportero', director:'Director' };
+document.getElementById('userGreeting').textContent = 'Hola, ' + (session.name || session.nombre || 'Usuario');
+document.getElementById('userRoleBadge').textContent = ROL_LABELS[session.role || session.rol] || '';
+const av = document.getElementById('userAvatar');
+av.style.cssText += 'display:grid;place-items:center;font-size:15px;font-weight:700;color:#f0ede8;font-family:"DM Sans",sans-serif;';
+av.textContent = ((session.name || session.nombre || 'U')[0]).toUpperCase();
+
+document.getElementById('logoutBtn').addEventListener('click', e => {
+  e.preventDefault();
+  sessionStorage.removeItem('cinehub_session');
+  window.location.href = 'index.html';
+});
+
+// ── ESTADO ──────────────────────────────────────────────────────────
+let currentEntity = 'peliculas';
+let currentData   = [];
+let editingId     = null;
+let deleteId      = null;
+
+// ── CONFIG DE ENTIDADES ─────────────────────────────────────────────
+const ENTITY_CONFIG = {
+  peliculas: {
+    label: 'Película',
+    endpoint: '/api/peliculas',
+    idField: 'id_pelicula',
+    columns: [
+      { key: 'titulo',      label: 'Título' },
+      { key: 'genero',      label: 'Género' },
+      { key: 'anio',        label: 'Año' },
+      { key: 'duracion_min',label: 'Duración (min)' },
+      { key: 'director',    label: 'Director', readOnly: true },
+    ],
+    formFields: [
+      { key: 'titulo',       label: 'Título',          type: 'text',   required: true },
+      { key: 'genero',       label: 'Género',          type: 'select', required: true,
+        options: ['Acción','Comedia','Drama','Terror','Ciencia Ficción','Romance','Animación',
+                  'Documental','Thriller','Aventura','Fantasía','Histórica','Musical','Western'] },
+      { key: 'anio',         label: 'Año',             type: 'number', min: 1900, max: 2030 },
+      { key: 'duracion_min', label: 'Duración (min)',  type: 'number', min: 1 },
+      { key: 'sinopsis',     label: 'Sinopsis',        type: 'textarea' },
+      { key: 'id_produccion',label: 'ID Producción',   type: 'number' },
+    ]
+  },
+  series: {
+    label: 'Serie',
+    endpoint: '/api/series',
+    idField: 'id_serie',
+    columns: [
+      { key: 'titulo',    label: 'Título' },
+      { key: 'genero',    label: 'Género' },
+      { key: 'anio',      label: 'Año' },
+      { key: 'temporadas',label: 'Temporadas' },
+    ],
+    formFields: [
+      { key: 'titulo',       label: 'Título',          type: 'text',   required: true },
+      { key: 'genero',       label: 'Género',          type: 'select', required: true,
+        options: ['Acción','Comedia','Drama','Terror','Ciencia Ficción','Romance','Animación',
+                  'Thriller','Aventura','Fantasía','Histórica','Musical'] },
+      { key: 'anio',         label: 'Año',             type: 'number', min: 1900, max: 2030 },
+      { key: 'temporadas',   label: 'Temporadas',      type: 'number', min: 1 },
+      { key: 'sinopsis',     label: 'Sinopsis',        type: 'textarea' },
+      { key: 'id_produccion',label: 'ID Producción',   type: 'number' },
+    ]
+  },
+  documentales: {
+    label: 'Documental',
+    endpoint: '/api/documentales',
+    idField: 'id_documental',
+    columns: [
+      { key: 'titulo',      label: 'Título' },
+      { key: 'tema',        label: 'Tema' },
+      { key: 'anio',        label: 'Año' },
+      { key: 'duracion_min',label: 'Duración (min)' },
+    ],
+    formFields: [
+      { key: 'titulo',       label: 'Título',          type: 'text',   required: true },
+      { key: 'tema',         label: 'Tema',            type: 'select', required: true,
+        options: ['Historia','Naturaleza','Ciencia','Arte','Política','Tecnología','Sociedad',
+                  'Deporte','Cultura','Economía','Medicina','Medio Ambiente'] },
+      { key: 'anio',         label: 'Año',             type: 'number', min: 1900, max: 2030 },
+      { key: 'duracion_min', label: 'Duración (min)',  type: 'number', min: 1 },
+      { key: 'sinopsis',     label: 'Sinopsis',        type: 'textarea' },
+      { key: 'id_produccion',label: 'ID Producción',   type: 'number' },
+    ]
+  }
+};
+
+// ── TOAST ────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✕';
+  t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+// ── FETCH DE DATOS ───────────────────────────────────────────────────
+async function loadData(entity) {
+  const cfg = ENTITY_CONFIG[entity];
+  setTableLoading();
+  try {
+    const res  = await fetch(API + cfg.endpoint);
+    const data = await res.json();
+    currentData = Array.isArray(data) ? data : [];
+    if (currentData[0]?.error) {
+      setTableError(currentData[0].error);
+      return;
+    }
+    renderTable();
+    populateGeneroFilter();
+  } catch (e) {
+    setTableError('No se pudo conectar con el servidor. ¿Está corriendo main.py?');
+  }
+}
+
+function setTableLoading() {
+  document.getElementById('tableHead').innerHTML = '<tr><th>Cargando...</th></tr>';
+  document.getElementById('tableBody').innerHTML = '<tr class="loading-row"><td colspan="10" style="text-align:center;padding:60px;color:var(--text-muted);">Consultando PostgreSQL...</td></tr>';
+}
+
+function setTableError(msg) {
+  document.getElementById('tableBody').innerHTML = `<tr><td colspan="10" style="text-align:center;padding:60px;color:var(--red);">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:40px;height:40px;opacity:.5;display:block;margin:0 auto 12px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    ${msg}</td></tr>`;
+}
+
+// ── RENDER TABLA ─────────────────────────────────────────────────────
+function renderTable(filter = '') {
+  const cfg = ENTITY_CONFIG[currentEntity];
+  const generoVal = document.getElementById('generoFilter').value;
+
+  // Encabezados
+  const headRow = cfg.columns.map(c => `<th>${c.label}</th>`).join('') + '<th>Acciones</th>';
+  document.getElementById('tableHead').innerHTML = `<tr>${headRow}</tr>`;
+
+  // Filtrado
+  let rows = currentData.filter(row => {
+    const matchSearch = !filter || Object.values(row).some(v =>
+      String(v || '').toLowerCase().includes(filter.toLowerCase())
+    );
+    const generoKey = currentEntity === 'documentales' ? 'tema' : 'genero';
+    const matchGenero = !generoVal || String(row[generoKey] || '') === generoVal;
+    return matchSearch && matchGenero;
+  });
+
+  document.getElementById('recordCount').textContent = rows.length;
+
+  if (rows.length === 0) {
+    document.getElementById('tableBody').innerHTML = `
+      <tr><td colspan="${cfg.columns.length + 1}">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p>No se encontraron registros.</p>
+        </div>
+      </td></tr>`;
+    return;
+  }
+
+  const tbody = rows.map(row => {
+    const cells = cfg.columns.map(c => {
+      const val = row[c.key] != null ? row[c.key] : '—';
+      return `<td>${val}</td>`;
+    }).join('');
+    const id = row[cfg.idField];
+    return `<tr>
+      ${cells}
+      <td>
+        <div class="row-actions">
+          <button class="btn-edit" onclick="openEdit(${id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editar
+          </button>
+          <button class="btn-delete" onclick="openDelete(${id}, '${String(row.titulo || row.titulo || '').replace(/'/g,"\\'")}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            Eliminar
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tableBody').innerHTML = tbody;
+}
+
+function populateGeneroFilter() {
+  const cfg = ENTITY_CONFIG[currentEntity];
+  const generoKey = currentEntity === 'documentales' ? 'tema' : 'genero';
+  const values = [...new Set(currentData.map(r => r[generoKey]).filter(Boolean))].sort();
+  const sel = document.getElementById('generoFilter');
+  const label = currentEntity === 'documentales' ? 'Todos los temas' : 'Todos los géneros';
+  sel.innerHTML = `<option value="">${label}</option>` +
+    values.map(v => `<option value="${v}">${v}</option>`).join('');
+}
+
+// ── FORMULARIO MODAL ─────────────────────────────────────────────────
+function buildForm(entity, rowData = null) {
+  const cfg = ENTITY_CONFIG[entity];
+  const pairs = [];
+  const fields = cfg.formFields;
+
+  let html = '';
+  let i = 0;
+  while (i < fields.length) {
+    const f = fields[i];
+    const next = fields[i + 1];
+
+    // Poner en pares si ambos son type number y no textarea
+    if (f.type === 'number' && next && next.type === 'number') {
+      html += `<div class="form-row">${buildField(f, rowData)}${buildField(next, rowData)}</div>`;
+      i += 2;
+    } else {
+      html += buildField(f, rowData);
+      i++;
+    }
+  }
+  document.getElementById('modalFormBody').innerHTML = html;
+}
+
+function buildField(f, rowData) {
+  const val = rowData ? (rowData[f.key] != null ? rowData[f.key] : '') : '';
+  const req = f.required ? 'required' : '';
+  const label = `<label>${f.label}${f.required ? ' <span style="color:var(--red)">*</span>' : ''}</label>`;
+
+  if (f.type === 'textarea') {
+    return `<div class="form-group">${label}<textarea class="form-control" id="field_${f.key}" ${req}>${val}</textarea></div>`;
+  }
+  if (f.type === 'select') {
+    const opts = f.options.map(o =>
+      `<option value="${o}" ${o === val ? 'selected' : ''}>${o}</option>`
+    ).join('');
+    return `<div class="form-group">${label}<select class="form-control" id="field_${f.key}" ${req}><option value="">Seleccionar...</option>${opts}</select></div>`;
+  }
+  // number, text
+  const extra = f.min !== undefined ? `min="${f.min}"` : '';
+  const extra2 = f.max !== undefined ? `max="${f.max}"` : '';
+  return `<div class="form-group">${label}<input type="${f.type}" class="form-control" id="field_${f.key}" value="${val}" ${req} ${extra} ${extra2} /></div>`;
+}
+
+function getFormData() {
+  const cfg = ENTITY_CONFIG[currentEntity];
+  const data = {};
+  cfg.formFields.forEach(f => {
+    const el = document.getElementById('field_' + f.key);
+    if (!el) return;
+    const v = el.value.trim();
+    if (f.type === 'number') {
+      data[f.key] = v !== '' ? Number(v) : null;
+    } else {
+      data[f.key] = v || null;
+    }
+  });
+  return data;
+}
+
+function validateForm() {
+  const cfg = ENTITY_CONFIG[currentEntity];
+  for (const f of cfg.formFields) {
+    if (!f.required) continue;
+    const el = document.getElementById('field_' + f.key);
+    if (!el) continue;
+    if (!el.value.trim()) {
+      el.focus();
+      showToast(`El campo "${f.label}" es obligatorio.`, 'error');
+      return false;
+    }
+  }
+  return true;
+}
+
+// ── ABRIR MODAL NUEVO ────────────────────────────────────────────────
+document.getElementById('btnNuevo').addEventListener('click', () => {
+  editingId = null;
+  const cfg = ENTITY_CONFIG[currentEntity];
+  document.getElementById('modalTitle').textContent = `Nueva ${cfg.label}`;
+  buildForm(currentEntity, null);
+  document.getElementById('formModal').classList.add('open');
+});
+
+// ── ABRIR MODAL EDITAR ───────────────────────────────────────────────
+window.openEdit = function(id) {
+  const cfg = ENTITY_CONFIG[currentEntity];
+  const row = currentData.find(r => r[cfg.idField] === id);
+  if (!row) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = `Editar ${cfg.label}`;
+  buildForm(currentEntity, row);
+  document.getElementById('formModal').classList.add('open');
+};
+
+// ── CERRAR MODAL ─────────────────────────────────────────────────────
+['modalClose', 'btnCancelModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', () => {
+    document.getElementById('formModal').classList.remove('open');
+  });
+});
+
+document.getElementById('formModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('formModal'))
+    document.getElementById('formModal').classList.remove('open');
+});
+
+// ── GUARDAR ──────────────────────────────────────────────────────────
+document.getElementById('btnSaveModal').addEventListener('click', async () => {
+  if (!validateForm()) return;
+  const cfg = ENTITY_CONFIG[currentEntity];
+  const payload = getFormData();
+  const btn = document.getElementById('btnSaveModal');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  try {
+    let res, data;
+    if (editingId === null) {
+      // CREATE
+      res  = await fetch(API + cfg.endpoint, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      // UPDATE
+      res  = await fetch(`${API}${cfg.endpoint}/${editingId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+    data = await res.json();
+    if (data.ok === false || data.error) {
+      showToast(data.error || 'Error al guardar.', 'error');
+    } else {
+      showToast(editingId === null ? `${cfg.label} creada con éxito.` : `${cfg.label} actualizada.`);
+      document.getElementById('formModal').classList.remove('open');
+      await loadData(currentEntity);
+    }
+  } catch (e) {
+    showToast('No se pudo conectar con el servidor.', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar';
+  }
+});
+
+// ── ELIMINAR ─────────────────────────────────────────────────────────
+window.openDelete = function(id, titulo) {
+  deleteId = id;
+  document.getElementById('confirmText').textContent = `¿Eliminar "${titulo}"? Esta acción no se puede deshacer.`;
+  document.getElementById('confirmModal').classList.add('open');
+};
+
+document.getElementById('btnCancelDelete').addEventListener('click', () => {
+  document.getElementById('confirmModal').classList.remove('open');
+  deleteId = null;
+});
+
+document.getElementById('btnConfirmDelete').addEventListener('click', async () => {
+  if (!deleteId) return;
+  const cfg = ENTITY_CONFIG[currentEntity];
+  const btn = document.getElementById('btnConfirmDelete');
+  btn.disabled = true; btn.textContent = 'Eliminando...';
+  try {
+    const res  = await fetch(`${API}${cfg.endpoint}/${deleteId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.ok === false || data.error) {
+      showToast(data.error || 'Error al eliminar.', 'error');
+    } else {
+      showToast(`${cfg.label} eliminada.`);
+      document.getElementById('confirmModal').classList.remove('open');
+      deleteId = null;
+      await loadData(currentEntity);
+    }
+  } catch (e) {
+    showToast('No se pudo conectar con el servidor.', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sí, eliminar';
+  }
+});
+
+// ── TABS ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.entity-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.entity-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentEntity = tab.dataset.entity;
+    document.getElementById('tableSearch').value = '';
+    document.getElementById('generoFilter').innerHTML = '<option value="">Todos los géneros</option>';
+    loadData(currentEntity);
+  });
+});
+
+// ── BÚSQUEDA / FILTRO ────────────────────────────────────────────────
+document.getElementById('tableSearch').addEventListener('input', e => {
+  renderTable(e.target.value);
+});
+document.getElementById('globalSearch').addEventListener('input', e => {
+  document.getElementById('tableSearch').value = e.target.value;
+  renderTable(e.target.value);
+});
+document.getElementById('generoFilter').addEventListener('change', () => {
+  renderTable(document.getElementById('tableSearch').value);
+});
+
+// ── CARGA INICIAL ────────────────────────────────────────────────────
+loadData(currentEntity);
+</script>
+</body>
+</html>
