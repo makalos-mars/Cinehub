@@ -22,11 +22,10 @@ body {
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
     display: flex;
-    /* Para poner sidebar y main lado a lado */
     min-height: 100vh;
 }
 
-/* ── BARRA LATERAL (SIDEBAR) ── */
+/* SIDEBAR*/
 .sidebar {
     width: 260px;
     background-color: var(--sidebar-bg);
@@ -123,7 +122,7 @@ body {
     color: var(--red);
 }
 
-/* ── CONTENIDO PRINCIPAL ── */
+/* CONTENIDO PRINCIPAL */
 .main-content {
     margin-left: 260px;
     /* Ancho de la sidebar */
@@ -183,7 +182,7 @@ body {
     border-radius: 50%;
 }
 
-/* ── SECCIONES ── */
+/* SECCIONES */
 .dashboard-section {
     margin-bottom: 50px;
 }

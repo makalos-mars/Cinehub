@@ -3,450 +3,170 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cinemx — Descubre tu próxima película favorita</title>
+  <title>CineHub — El cine mexicano en un solo lugar</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* ── MODAL DE SESIÓN ACTIVA ── */
-    .session-toast {
-      position: fixed;
-      top: 90px;
-      right: 24px;
-      z-index: 999;
-      background: #1c1c20;
-      border: 1px solid rgba(229, 57, 53, 0.35);
-      border-radius: 14px;
-      padding: 18px 22px;
-      width: 320px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(229,57,53,0.1);
+    /* ── CATÁLOGO SHOWCASE ── */
+    .catalog-nav {
       display: flex;
-      flex-direction: column;
-      gap: 14px;
-      transform: translateX(360px);
-      opacity: 0;
-      transition: transform 0.45s cubic-bezier(.22,1,.36,1), opacity 0.35s ease;
-    }
-    .session-toast.show {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    .session-toast-header {
-      display: flex;
-      align-items: center;
       gap: 10px;
-    }
-    .session-avatar {
-      width: 38px;
-      height: 38px;
-      background: rgba(229,57,53,0.15);
-      border: 1.5px solid rgba(229,57,53,0.4);
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-size: 16px;
-      font-weight: 700;
-      color: #f0ede8;
-      font-family: 'DM Sans', sans-serif;
-      flex-shrink: 0;
-    }
-    .session-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .session-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: #f0ede8;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .session-role {
-      font-size: 11px;
-      color: #ff6b6b;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-top: 1px;
-    }
-    .session-close-btn {
-      background: none;
-      border: none;
-      color: #8a8793;
-      cursor: pointer;
-      font-size: 16px;
-      padding: 2px;
-      line-height: 1;
-      transition: color 0.2s;
-    }
-    .session-close-btn:hover { color: #f0ede8; }
-    .session-divider {
-      height: 1px;
-      background: rgba(255,255,255,0.06);
-    }
-    .session-msg {
-      font-size: 13px;
-      color: #8a8793;
-      line-height: 1.5;
-    }
-    .session-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .session-btn-primary {
-      flex: 1;
-      background: #e53935;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: background 0.2s, transform 0.15s;
-    }
-    .session-btn-primary:hover { background: #f44336; transform: translateY(-1px); }
-    .session-btn-secondary {
-      background: none;
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #8a8793;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .session-btn-secondary:hover { color: #f0ede8; border-color: rgba(255,255,255,0.2); }
-
-    /* ══════════════════════════════════════
-       SECCIÓN DE PELÍCULAS
-    ══════════════════════════════════════ */
-    #peliculas {
-      padding: 80px 5%;
-      background: var(--bg);
-    }
-
-    /* Controles: búsqueda + filtros */
-    .movies-controls {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
       margin-bottom: 36px;
-    }
-
-    .movies-search-wrap {
-      position: relative;
-      flex: 1;
-      max-width: 340px;
-    }
-
-    .movies-search-wrap svg {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 15px;
-      height: 15px;
-      color: var(--muted);
-      pointer-events: none;
-    }
-
-    .movies-search-input {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px 10px 40px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .movies-search-input:focus {
-      border-color: rgba(229, 57, 53, 0.4);
-    }
-
-    .movies-search-input::placeholder {
-      color: var(--muted);
-    }
-
-    .genre-filters {
-      display: flex;
-      gap: 8px;
       flex-wrap: wrap;
     }
 
-    .genre-chip {
+    .catalog-tab {
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--muted);
       font-family: 'DM Sans', sans-serif;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 10px 22px;
+      border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s;
-      white-space: nowrap;
+      text-decoration: none;
     }
 
-    .genre-chip:hover {
+    .catalog-tab:hover {
       color: var(--text);
-      border-color: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.2);
     }
 
-    .genre-chip.active {
-      background: rgba(229, 57, 53, 0.15);
-      border-color: rgba(229, 57, 53, 0.45);
-      color: #ff6b6b;
+    .catalog-tab.active, .catalog-tab[data-active] {
+      background: var(--red);
+      color: white;
+      border-color: var(--red);
+      box-shadow: 0 4px 18px rgba(229,57,53,0.35);
     }
 
-    /* Grid de películas */
+    /* ── GRID DE TARJETAS ── */
     .movies-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 18px;
     }
 
-    /* Tarjeta de película */
     .movie-card {
-      position: relative;
-      border-radius: 12px;
-      overflow: hidden;
       background: var(--surface);
       border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
       cursor: pointer;
-      transition: transform 0.3s cubic-bezier(.22,1,.36,1), border-color 0.25s, box-shadow 0.3s;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
       text-decoration: none;
-      display: flex;
-      flex-direction: column;
+      display: block;
     }
 
     .movie-card:hover {
-      transform: translateY(-6px) scale(1.01);
-      border-color: rgba(229, 57, 53, 0.35);
-      box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(229,57,53,0.1);
+      transform: translateY(-5px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      border-color: rgba(229,57,53,0.3);
     }
 
     .movie-poster {
+      aspect-ratio: 2/3;
+      background: var(--bg3);
       position: relative;
-      aspect-ratio: 2 / 3;
       overflow: hidden;
-      background: #111;
     }
 
     .movie-poster img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s cubic-bezier(.22,1,.36,1);
-      display: block;
+      transition: transform 0.4s;
     }
 
     .movie-card:hover .movie-poster img {
-      transform: scale(1.07);
+      transform: scale(1.06);
     }
 
-    /* Overlay al hacer hover: muestra sinopsis */
-    .movie-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(0deg, rgba(10,10,11,0.97) 0%, rgba(10,10,11,0.5) 60%, transparent 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 16px;
-      opacity: 0;
-      transition: opacity 0.3s;
+    .movie-poster-placeholder {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #1a1a1e 0%, #0f0f12 100%);
     }
 
-    .movie-card:hover .movie-overlay {
-      opacity: 1;
+    .movie-poster-placeholder svg {
+      width: 48px;
+      height: 48px;
+      opacity: 0.2;
+      fill: var(--red);
     }
 
-    .movie-overlay-synopsis {
-      font-size: 12px;
-      color: rgba(240, 237, 232, 0.8);
-      line-height: 1.5;
-      margin-bottom: 12px;
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .movie-overlay-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--red);
-      color: white;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 7px 12px;
-      border-radius: 7px;
-      align-self: flex-start;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-
-    .movie-overlay-btn:hover {
-      background: #f44336;
-    }
-
-    /* Rating badge sobre la imagen */
-    .movie-rating-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(10,10,11,0.85);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,179,0,0.3);
-      border-radius: 6px;
-      padding: 3px 8px;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      z-index: 2;
-    }
-
-    /* Género badge sobre la imagen */
-    .movie-genre-badge {
+    .movie-type-badge {
       position: absolute;
       top: 10px;
       left: 10px;
-      background: rgba(229, 57, 53, 0.85);
-      backdrop-filter: blur(6px);
-      border-radius: 5px;
-      padding: 2px 8px;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: white;
-      z-index: 2;
+      letter-spacing: 1px;
+      padding: 3px 7px;
+      border-radius: 4px;
     }
 
-    /* Info debajo de la imagen */
+    .badge-pelicula   { background: rgba(229,57,53,0.85); color: white; }
+    .badge-documental { background: rgba(66,165,245,0.85); color: white; }
+    .badge-serie      { background: rgba(102,187,106,0.85); color: white; }
+
     .movie-info {
-      padding: 14px 14px 16px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      padding: 14px;
     }
 
     .movie-title {
       font-size: 14px;
       font-weight: 700;
       color: var(--text);
+      margin-bottom: 4px;
       line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+      white-space: nowrap;
       overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .movie-meta {
+      font-size: 12px;
+      color: var(--muted);
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 4px;
     }
 
-    .movie-meta-dot {
-      width: 3px;
-      height: 3px;
-      border-radius: 50%;
-      background: var(--muted);
-      opacity: 0.4;
+    .movie-genre {
+      background: rgba(255,255,255,0.06);
+      padding: 1px 6px;
+      border-radius: 3px;
     }
 
-    /* Placeholder cuando no hay imagen */
-    .movie-poster-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background: linear-gradient(135deg, #1c1c20 0%, #111114 100%);
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .movie-poster-placeholder svg {
-      width: 36px;
-      height: 36px;
-      opacity: 0.3;
-    }
-
-    /* Estado sin resultados */
-    .movies-empty {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 80px 20px;
-      color: var(--muted);
-    }
-
-    .movies-empty svg {
-      width: 48px;
-      height: 48px;
-      opacity: 0.3;
-      margin: 0 auto 16px;
-      display: block;
-    }
-
-    .movies-empty h3 {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-
-    /* Contador de resultados */
-    .movies-count {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 20px;
-    }
-
-    .movies-count strong {
-      color: var(--text);
-    }
-
-    /* Skeleton loader para cuando se conecte la BD */
-    .movie-card-skeleton {
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, #26262b 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
       border-radius: 12px;
-      overflow: hidden;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card {
       background: var(--surface);
       border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
     }
 
     .skeleton-poster {
       aspect-ratio: 2/3;
-      background: linear-gradient(90deg, var(--surface) 25%, #26262b 50%, var(--surface) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
     }
 
     .skeleton-info {
@@ -459,545 +179,436 @@
     .skeleton-line {
       height: 12px;
       border-radius: 4px;
-      background: linear-gradient(90deg, var(--surface) 25%, #26262b 50%, var(--surface) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
     }
 
-    .skeleton-line.short { width: 60%; }
+    /* ── ACCESOS RÁPIDOS ── */
+    .quick-access {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 60px;
+    }
 
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+    .qa-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 24px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .qa-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .qa-card.qa-movies::before  { background: radial-gradient(ellipse 80% 60% at 0% 100%, rgba(229,57,53,0.12) 0%, transparent 60%); }
+    .qa-card.qa-docs::before    { background: radial-gradient(ellipse 80% 60% at 0% 100%, rgba(66,165,245,0.12) 0%, transparent 60%); }
+    .qa-card.qa-series::before  { background: radial-gradient(ellipse 80% 60% at 0% 100%, rgba(102,187,106,0.12) 0%, transparent 60%); }
+
+    .qa-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+    }
+
+    .qa-card:hover::before { opacity: 1; }
+    .qa-card:hover { border-color: rgba(255,255,255,0.15); }
+
+    .qa-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .qa-icon svg { width: 26px; height: 26px; }
+
+    .qa-movies .qa-icon  { background: rgba(229,57,53,0.15); color: var(--red); }
+    .qa-docs .qa-icon    { background: rgba(66,165,245,0.15); color: #42a5f5; }
+    .qa-series .qa-icon  { background: rgba(102,187,106,0.15); color: #66bb6a; }
+
+    .qa-text {}
+    .qa-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .qa-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: var(--text);
+    }
+
+    .qa-count {
+      margin-left: auto;
+      font-size: 28px;
+      font-family: 'Bebas Neue', sans-serif;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    /* ── EMPTY STATE ── */
+    .grid-empty {
+      grid-column: 1 / -1;
+      padding: 60px;
+      text-align: center;
+      color: var(--muted);
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+    }
+
+    .grid-empty svg {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     @media (max-width: 768px) {
-      .movies-controls {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .movies-search-wrap {
-        max-width: 100%;
-        width: 100%;
-      }
-      .movies-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 14px;
-      }
+      .quick-access { grid-template-columns: 1fr; }
+      .movies-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+
+    @media (max-width: 480px) {
+      .movies-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ TOAST DE SESIÓN ACTIVA ══ -->
-  <div class="session-toast" id="sessionToast">
-    <div class="session-toast-header">
-      <div class="session-avatar" id="toastAvatar">?</div>
-      <div class="session-info">
-        <div class="session-name" id="toastName">Usuario</div>
-        <div class="session-role" id="toastRole">Rol</div>
-      </div>
-      <button class="session-close-btn" id="toastClose">✕</button>
-    </div>
-    <div class="session-divider"></div>
-    <p class="session-msg">Tu sesión sigue activa. ¿Quieres ir a tu panel?</p>
-    <div class="session-actions">
-      <a href="dashboard.html" class="session-btn-primary">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-        Mi Panel
-      </a>
-      <button class="session-btn-secondary" id="toastLogout">Cerrar sesión</button>
-    </div>
-  </div>
-
-  <!-- ══ NAVBAR ══ -->
+  <!-- NAVBAR -->
   <nav id="navbar">
-    <a href="#" class="nav-logo">
+    <a href="index.html" class="nav-logo">
       <div class="logo-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z"/></svg>
       </div>
-      <span class="logo-text">Cine<span>mx</span></span>
+      <span class="logo-text">Cine<span>Hub</span></span>
     </a>
 
     <ul class="nav-links">
       <li>
-        <a href="#peliculas" class="active">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z" /></svg>
+        <a href="catalogo.html?tipo=pelicula">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg>
           Películas
         </a>
       </li>
       <li>
-        <a href="#cine">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" /></svg>
-          Cine
+        <a href="catalogo.html?tipo=documental">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/></svg>
+          Documentales
         </a>
       </li>
       <li>
-        <a href="#directores">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" /></svg>
-          Director
-        </a>
-      </li>
-      <li>
-        <a href="#series">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" /></svg>
+        <a href="catalogo.html?tipo=serie">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
           Series
+        </a>
+      </li>
+      <li>
+        <a href="reportes.html">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          Reportes
         </a>
       </li>
     </ul>
 
     <div class="nav-right">
       <button class="btn-search" id="searchBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         Buscar
       </button>
-      <a href="login.html" class="btn-cta" id="navCta" style="text-decoration:none;">Iniciar sesión</a>
-      <button class="hamburger" id="hamburger">
-        <span></span><span></span><span></span>
-      </button>
+      <a href="login.html" class="btn-cta" id="navAuthBtn">Mi cuenta</a>
     </div>
+
+    <button class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
 
-  <!-- ══ MOBILE MENU ══ -->
+  <!-- MENÚ MÓVIL -->
   <div class="mobile-menu" id="mobileMenu">
     <ul>
-      <li><a href="#peliculas">Películas</a></li>
-      <li><a href="#cine">Cine</a></li>
-      <li><a href="#directores">Director</a></li>
-      <li><a href="#series">Series</a></li>
+      <li><a href="catalogo.html?tipo=pelicula">🎬 Películas</a></li>
+      <li><a href="catalogo.html?tipo=documental">🎥 Documentales</a></li>
+      <li><a href="catalogo.html?tipo=serie">📺 Series</a></li>
+      <li><a href="reportes.html">📊 Reportes</a></li>
+      <li><a href="login.html">👤 Mi cuenta</a></li>
     </ul>
-    <div class="mobile-search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
-      <input type="text" placeholder="Buscar películas, series…" />
-    </div>
   </div>
 
-  <!-- ══ SEARCH MODAL ══ -->
-  <div class="search-modal" id="searchModal">
-    <button class="search-close" id="searchClose">✕ Cerrar</button>
-    <div class="search-input-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
-      <input type="text" placeholder="Buscar películas, series, documentales…" autofocus />
-    </div>
-  </div>
-
-  <!-- ══ HERO ══ -->
+  <!-- HERO -->
   <section class="hero">
     <div class="hero-bg"></div>
     <div class="hero-noise"></div>
     <div class="hero-gradient-bottom"></div>
-
     <div class="hero-content">
-      <div class="hero-badge">EN TENDENCIA AHORA</div>
-      <h1>Descubre tu próxima<br /><em>película</em> favorita</h1>
-      <p>Aquí encuentras información de miles de películas, series y documentales de México.</p>
-      <div class="hero-actions" style="display:flex;align-items:center;flex-wrap:wrap;gap:16px;">
-        <a href="#peliculas" class="btn-primary">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-          Explorar ahora
-        </a>
-        <a href="dashboard.html" id="heroDashboardBtn" style="display:none; color:var(--red); font-size:15px; font-weight:700; text-decoration:none;">Mi Panel →</a>
+      <div class="hero-badge">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="var(--red)"><circle cx="6" cy="6" r="6"/></svg>
+        Conectado a PostgreSQL en tiempo real
       </div>
+      <h1>El cine <em>mexicano</em><br/>en un solo lugar</h1>
+      <p>Explora, califica y descubre películas, documentales y series. Gestiona el catálogo directamente desde la base de datos.</p>
+      <a href="#catalogo" class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        Ver catálogo
+      </a>
     </div>
   </section>
 
-  <!-- ══ FEATURED SECTION ══ -->
-  <section id="featured">
-    <div class="section-header">
-      <div>
-        <div class="section-label">Selección de nuestros críticos</div>
-        <h2 class="section-title">Destacado esta semana</h2>
-      </div>
-    </div>
-    <div class="featured-grid">
-      <div class="featured-main">
-        <img src="https://media.glamour.mx/photos/696175464a68449edec6eb50/1:1/w_2000,h_2000,c_limit/como-agua-para-chocolate-temporada-2.jpg" alt="Featured Movie" loading="lazy" />
-        <div class="card-overlay"></div>
-        <div class="featured-main-info">
-          <span class="card-tag">Estreno</span>
-          <h3>Como agua para chocolate<br />Segunda temporada</h3>
-          <p>Ve el final de la historia de amor de Tita y Pedro</p>
+  <!-- ACCESOS RÁPIDOS -->
+  <section style="padding: 60px 5% 0;">
+    <div class="quick-access" id="quickAccess">
+      <a href="catalogo.html?tipo=pelicula" class="qa-card qa-movies">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg>
         </div>
-      </div>
-      <div class="featured-side">
-        <img src="https://http2.mlstatic.com/D_NQ_NP_637611-MLM88295054266_072025-O.webp" alt="Movie" loading="lazy" />
-        <div class="card-overlay"></div>
-        <div class="featured-side-info">
-          <span class="card-tag">Serie</span>
-          <h4>Chespirito</h4>
-          <div class="card-meta"><span class="card-rating">⭐ 6.0</span><span>2025</span></div>
+        <div class="qa-text">
+          <div class="qa-label">Gestionar</div>
+          <div class="qa-title">Películas</div>
         </div>
-      </div>
-      <div class="featured-side">
-        <img src="https://i0.wp.com/ciudadanosenred.com.mx/wp-content/uploads/2021/07/marisela-escobedo-1.jpeg?resize=512%2C512&ssl=1" alt="Movie" loading="lazy" />
-        <div class="card-overlay"></div>
-        <div class="featured-side-info">
-          <span class="card-tag">Documental</span>
-          <h4>Las tres muertes de Marisela Escobedo</h4>
-          <div class="card-meta"><span class="card-rating">⭐ 8.8</span><span>2020</span></div>
+        <span class="qa-count" id="countPeliculas">—</span>
+      </a>
+
+      <a href="catalogo.html?tipo=documental" class="qa-card qa-docs">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/></svg>
         </div>
-      </div>
-      <div class="featured-side">
-        <img src="https://media.vogue.mx/photos/6974ece86d86dbffd96af425/2:3/w_2560%2Cc_limit/mundial-86-netflix.jpg" alt="Movie" loading="lazy" />
-        <div class="card-overlay"></div>
-        <div class="featured-side-info">
-          <span class="card-tag">Película</span>
-          <h4>México 86</h4>
-          <div class="card-meta"><span class="card-rating">⭐ 8.0</span><span>2026</span></div>
+        <div class="qa-text">
+          <div class="qa-label">Gestionar</div>
+          <div class="qa-title">Documentales</div>
         </div>
-      </div>
+        <span class="qa-count" id="countDocumentales">—</span>
+      </a>
+
+      <a href="catalogo.html?tipo=serie" class="qa-card qa-series">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+        </div>
+        <div class="qa-text">
+          <div class="qa-label">Gestionar</div>
+          <div class="qa-title">Series</div>
+        </div>
+        <span class="qa-count" id="countSeries">—</span>
+      </a>
     </div>
   </section>
 
-  <!-- ══════════════════════════════════════════
-       SECCIÓN DE PELÍCULAS — CATÁLOGO COMPLETO
-       ══════════════════════════════════════════ -->
-  <section id="peliculas">
-    <div class="section-header" style="margin-bottom: 0;">
+  <!-- CATÁLOGO PRINCIPAL -->
+  <section id="catalogo" style="padding: 40px 5% 80px;">
+    <header class="section-header" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
       <div>
-        <div class="section-label">Catálogo completo</div>
-        <h2 class="section-title">Todas las Películas</h2>
+        <p class="section-label">Base de datos en vivo</p>
+        <h2 class="section-title">Catálogo</h2>
       </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span id="catalogCount" style="font-size:13px; color:var(--muted);"></span>
+      </div>
+    </header>
+
+    <!-- Tabs de filtro -->
+    <div class="catalog-nav">
+      <button class="catalog-tab active" data-tipo="">Todos</button>
+      <button class="catalog-tab" data-tipo="pelicula">🎬 Películas</button>
+      <button class="catalog-tab" data-tipo="documental">🎥 Documentales</button>
+      <button class="catalog-tab" data-tipo="serie">📺 Series</button>
     </div>
 
-    <!-- Controles: búsqueda + filtros de género -->
-    <div class="movies-controls">
-      <div class="movies-search-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-        </svg>
-        <input
-          type="text"
-          class="movies-search-input"
-          id="moviesSearch"
-          placeholder="Buscar por título, director, año..."
-        />
-      </div>
-
-      <div class="genre-filters" id="genreFilters">
-        <button class="genre-chip active" data-genre="all">Todos</button>
-        <button class="genre-chip" data-genre="Drama">Drama</button>
-        <button class="genre-chip" data-genre="Comedia">Comedia</button>
-        <button class="genre-chip" data-genre="Thriller">Thriller</button>
-        <button class="genre-chip" data-genre="Documental">Documental</button>
-        <button class="genre-chip" data-genre="Acción">Acción</button>
-        <button class="genre-chip" data-genre="Romance">Romance</button>
-      </div>
-    </div>
-
-    <p class="movies-count" id="moviesCount"></p>
-
-    <!-- Grid de tarjetas -->
+    <!-- Grid -->
     <div class="movies-grid" id="moviesGrid">
-      <!-- Las tarjetas se inyectan con JS -->
+      <!-- Skeletons mientras carga -->
+      ${Array.from({length: 8}).map(() => `
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-poster"></div>
+          <div class="skeleton-info">
+            <div class="skeleton skeleton-line" style="width:80%;"></div>
+            <div class="skeleton skeleton-line" style="width:50%;"></div>
+          </div>
+        </div>
+      `).join('')}
     </div>
   </section>
 
-  <!-- ══ FOOTER ══ -->
+  <!-- FOOTER -->
   <footer>
     <div class="footer-top">
       <div class="footer-brand">
-        <a href="#" class="nav-logo">
-          <span class="logo-text">Cine<span>mx</span></span>
+        <a href="index.html" class="nav-logo" style="text-decoration:none;">
+          <div class="logo-icon" style="width:28px;height:28px;"><svg viewBox="0 0 24 24"><path fill="white" d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z"/></svg></div>
+          <span class="logo-text" style="font-size:20px;">Cine<span>Hub</span></span>
         </a>
-        <p>Tu guía definitiva para descubrir películas, series y documentales de México.</p>
+        <p>El catálogo del cine mexicano, conectado a PostgreSQL en tiempo real.</p>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 Cinemx.</p>
+      <p>© 2025 CineHub — Proyecto académico</p>
     </div>
   </footer>
 
+  <!-- SEARCH MODAL -->
+  <div class="search-modal" id="searchModal">
+    <button class="search-close" id="searchClose">Cerrar ✕</button>
+    <div class="search-input-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Buscar película, documental o serie..." id="searchInput" />
+    </div>
+    <div class="movies-grid" id="searchResults" style="max-width:900px; width:100%; margin-top:32px;"></div>
+  </div>
+
   <script src="script.js"></script>
-
-  <!-- ══ SESIÓN ══ -->
   <script>
+    const API = 'http://localhost:8000';
+
+    // ── Auth nav button ──
     (function() {
-      var session = sessionStorage.getItem('cinehub_session');
-      if (!session) return;
-      try {
-        var user = JSON.parse(session);
-        var roleLabels = { aficionado:'Aficionado', critico:'Crítico', reportero:'Reportero', director:'Director' };
-        var heroBtn = document.getElementById('heroDashboardBtn');
-        if (heroBtn) heroBtn.style.display = 'inline-flex';
-        var navCta = document.getElementById('navCta');
-        if (navCta) { navCta.textContent = 'Mi Panel'; navCta.href = 'dashboard.html'; }
-        var toastAvatar = document.getElementById('toastAvatar');
-        var toastName   = document.getElementById('toastName');
-        var toastRole   = document.getElementById('toastRole');
-        if (toastAvatar) toastAvatar.textContent = (user.name || 'U')[0].toUpperCase();
-        if (toastName)   toastName.textContent = user.name + ' ' + (user.lastName || '');
-        if (toastRole)   toastRole.textContent = roleLabels[user.role] || user.role;
-        var toast = document.getElementById('sessionToast');
-        setTimeout(function() { if (toast) toast.classList.add('show'); }, 600);
-        var closeBtn = document.getElementById('toastClose');
-        if (closeBtn) closeBtn.addEventListener('click', function() { toast.classList.remove('show'); });
-        var logoutBtn = document.getElementById('toastLogout');
-        if (logoutBtn) logoutBtn.addEventListener('click', function() {
-          sessionStorage.removeItem('cinehub_session');
-          toast.classList.remove('show');
-          var cta = document.getElementById('navCta');
-          if (cta) { cta.textContent = 'Iniciar sesión'; cta.href = 'login.html'; }
-          var hBtn = document.getElementById('heroDashboardBtn');
-          if (hBtn) hBtn.style.display = 'none';
-        });
-      } catch(e) { sessionStorage.removeItem('cinehub_session'); }
+      const session = sessionStorage.getItem('cinehub_session');
+      const btn = document.getElementById('navAuthBtn');
+      if (session) {
+        try {
+          const u = JSON.parse(session);
+          btn.textContent = u.nombre || 'Mi panel';
+          btn.href = 'dashboard.html';
+        } catch(e) {}
+      }
     })();
-  </script>
 
-  <!-- ══ CATÁLOGO DE PELÍCULAS ══ -->
-  <script>
-  (function() {
+    // ── Render card ──
+    function renderCard(item) {
+      const typeClass = { pelicula: 'badge-pelicula', documental: 'badge-documental', serie: 'badge-serie' };
+      const typeLabel = { pelicula: 'Película', documental: 'Documental', serie: 'Serie' };
+      const poster = item.imagen_url
+        ? `<img src="${item.imagen_url}" alt="${item.titulo}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'movie-poster-placeholder\\'><svg viewBox=\\'0 0 24 24\\'><path d=\\'M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z\\'/></svg></div>'"/>`
+        : `<div class="movie-poster-placeholder"><svg viewBox="0 0 24 24"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg></div>`;
 
-    // ════════════════════════════════════════════════════════════════
-    //  DATOS MOCK — reemplazar por fetch() a tu API cuando conectes BD
-    //
-    //  Estructura esperada de la BD:
-    //  { id, titulo, director, anio, genero, rating, duracion,
-    //    sinopsis, portada_url }
-    // ════════════════════════════════════════════════════════════════
-    var MOCK_MOVIES = [
-      {
-        id: 1,
-        titulo: 'Roma',
-        director: 'Alfonso Cuarón',
-        anio: 2018,
-        genero: 'Drama',
-        rating: 8.7,
-        duracion: '135 min',
-        sinopsis: 'La vida de una familia de clase media en la Ciudad de México a principios de los años 70, vista a través de los ojos de su empleada doméstica.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BMTU2NjA1ODgzMF5BMl5BanBnXkFtZTgwMTM2NTI1NjM@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 2,
-        titulo: 'Y tu mamá también',
-        director: 'Alfonso Cuarón',
-        anio: 2001,
-        genero: 'Drama',
-        rating: 7.7,
-        duracion: '106 min',
-        sinopsis: 'Dos adolescentes mexicanos y una mujer española recorren el país en busca de una playa paradisíaca durante un viaje de verano lleno de revelaciones.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BNjA5MTI3MDEtNzYxNS00YzFiLTlmMWMtZDc5ZWM1ZDM3ZTgzXkEyXkFqcGc@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 3,
-        titulo: 'Amores Perros',
-        director: 'Alejandro González Iñárritu',
-        anio: 2000,
-        genero: 'Thriller',
-        rating: 8.0,
-        duracion: '154 min',
-        sinopsis: 'Tres historias entrelazadas por un brutal accidente de tránsito en la Ciudad de México que revelan el amor, la traición y la redención.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BZTFlMDU2YmYtZmMzZS00NzBhLTk1ZjQtMzVhOWY1Y2FiMjU2XkEyXkFqcGc@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 4,
-        titulo: 'El laberinto del fauno',
-        director: 'Guillermo del Toro',
-        anio: 2006,
-        genero: 'Drama',
-        rating: 8.2,
-        duracion: '118 min',
-        sinopsis: 'En la España de la posguerra, una niña descubre un laberinto mágico habitado por criaturas fantásticas mientras escapa de la brutalidad de su padrastro.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BYzFjMThiMWQtYmVlNy00MDc0LTk1ZWEtNGU4YTNiMjhkZGEzXkEyXkFqcGc@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 5,
-        titulo: 'Nosotros los Nobles',
-        director: 'Gary Alazraki',
-        anio: 2013,
-        genero: 'Comedia',
-        rating: 7.3,
-        duracion: '106 min',
-        sinopsis: 'Un millonario decide dar una lección a sus hijos malcriados haciéndoles creer que han perdido toda su fortuna.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BZjYwM2VkZGQtNGM2ZC00YTVmLWI4ZGItMzdkMjlmZWVlNDFlXkEyXkFqcGc@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 6,
-        titulo: 'Birdman',
-        director: 'Alejandro González Iñárritu',
-        anio: 2014,
-        genero: 'Drama',
-        rating: 7.7,
-        duracion: '119 min',
-        sinopsis: 'Un actor famoso por interpretar a un superhéroe trata de resucitar su carrera produciendo una obra de teatro en Broadway.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BODAzNDMxZTgtMDQ1OS00MWFiLWE0ZmQtYjFlZWI5ZjBkYjE2XkEyXkFqcGc@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 7,
-        titulo: 'Las tres muertes de Marisela Escobedo',
-        director: 'Carlos Pérez Osorio',
-        anio: 2020,
-        genero: 'Documental',
-        rating: 8.8,
-        duracion: '91 min',
-        sinopsis: 'El caso de Marisela Escobedo, una madre que buscó justicia por el feminicidio de su hija en Ciudad Juárez, hasta las últimas consecuencias.',
-        portada_url: 'https://i0.wp.com/ciudadanosenred.com.mx/wp-content/uploads/2021/07/marisela-escobedo-1.jpeg?resize=512%2C512&ssl=1'
-      },
-      {
-        id: 8,
-        titulo: 'Desierto',
-        director: 'Jonás Cuarón',
-        anio: 2015,
-        genero: 'Acción',
-        rating: 6.4,
-        duracion: '88 min',
-        sinopsis: 'Un grupo de inmigrantes es cazado por un hombre armado mientras cruza la frontera entre México y Estados Unidos.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BYzNkZGNmNjgtNDE4Yy00NDU2LThjZTQtMzFhZWRiZGY5NmU5XkEyXkFqcGc@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 9,
-        titulo: 'Coco',
-        director: 'Lee Unkrich',
-        anio: 2017,
-        genero: 'Drama',
-        rating: 8.4,
-        duracion: '105 min',
-        sinopsis: 'Un joven que sueña con ser músico viaja accidentalmente a la Tierra de los Muertos y descubre los secretos de su familia.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BYjQ5NjM0Y2YtNjZkNC00ZDhkLWJjMWItN2QyNzFkMDE3ZjAxXkEyXkFqcGc@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 10,
-        titulo: 'Como agua para chocolate',
-        director: 'Alfonso Arau',
-        anio: 1992,
-        genero: 'Romance',
-        rating: 7.2,
-        duracion: '105 min',
-        sinopsis: 'Tita, la menor de tres hijas, está prohibida de casarse por tradición familiar. Su amor imposible con Pedro queda sellado para siempre a través de la cocina.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BYjZmZTViYTEtY2MxNy00N2QxLTlmNDAtZmFiNzNlOGU2YmE0XkEyXkFqcGc@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 11,
-        titulo: 'El Infierno',
-        director: 'Luis Estrada',
-        anio: 2010,
-        genero: 'Comedia',
-        rating: 7.9,
-        duracion: '144 min',
-        sinopsis: 'Un migrante deportado de Estados Unidos regresa a su pueblo natal y termina involucrado en el narcotráfico en esta sátira negra de México.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BMjI5OTMxNjQ1M15BMl5BanBnXkFtZTcwMjc2MzEzNA@@._V1_FMjpg_UX800_.jpg'
-      },
-      {
-        id: 12,
-        titulo: 'Güeros',
-        director: 'Alonso Ruizpalacios',
-        anio: 2014,
-        genero: 'Drama',
-        rating: 7.2,
-        duracion: '106 min',
-        sinopsis: 'Dos hermanos capitalinos salen a buscar a un músico legendario de los años 60 durante una huelga universitaria en el DF.',
-        portada_url: 'https://m.media-amazon.com/images/M/MV5BMTkwNzc2MDgxMl5BMl5BanBnXkFtZTgwNzk1ODA2MjE@._V1_FMjpg_UX800_.jpg'
-      }
-    ];
-
-    // ════════════════════════════════════════════════════════════════
-    //  Estado del filtro
-    // ════════════════════════════════════════════════════════════════
-    var currentGenre  = 'all';
-    var currentSearch = '';
-
-    // ════════════════════════════════════════════════════════════════
-    //  Renderizado de tarjetas
-    // ════════════════════════════════════════════════════════════════
-    function renderMovies(movies) {
-      var grid  = document.getElementById('moviesGrid');
-      var count = document.getElementById('moviesCount');
-
-      count.innerHTML = 'Mostrando <strong>' + movies.length + '</strong> película' + (movies.length !== 1 ? 's' : '');
-
-      if (movies.length === 0) {
-        grid.innerHTML = '<div class="movies-empty">'
-          + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"/></svg>'
-          + '<h3>No se encontraron películas</h3>'
-          + '<p>Intenta con otro término o género.</p>'
-          + '</div>';
-        return;
-      }
-
-      grid.innerHTML = movies.map(function(movie) {
-        var stars = movie.rating >= 8 ? '⭐' : '';
-        return '<div class="movie-card" data-id="' + movie.id + '">'
-          + '<div class="movie-poster">'
-          + (movie.portada_url
-              ? '<img src="' + movie.portada_url + '" alt="' + movie.titulo + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=movie-poster-placeholder><svg viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'currentColor\\\' stroke-width=\\\'1.5\\\'><path d=\\\'M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z\\\'/></svg><span>Sin imagen</span></div>\'" />'
-              : '<div class="movie-poster-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg><span>Sin imagen</span></div>')
-          + '<div class="movie-genre-badge">' + movie.genero + '</div>'
-          + '<div class="movie-rating-badge">⭐ ' + movie.rating.toFixed(1) + '</div>'
-          + '<div class="movie-overlay">'
-          + '<p class="movie-overlay-synopsis">' + movie.sinopsis + '</p>'
-          + '</div>'
-          + '</div>'
-          + '<div class="movie-info">'
-          + '<div class="movie-title">' + movie.titulo + '</div>'
-          + '<div class="movie-meta">'
-          + '<span>' + movie.anio + '</span>'
-          + '<span class="movie-meta-dot"></span>'
-          + '<span>' + movie.duracion + '</span>'
-          + '<span class="movie-meta-dot"></span>'
-          + '<span style="color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;">' + movie.director + '</span>'
-          + '</div>'
-          + '</div>'
-          + '</div>';
-      }).join('');
+      return `
+        <a href="catalogo.html?tipo=${item.tipo}&id=${item.id_pelicula}" class="movie-card">
+          <div class="movie-poster">
+            ${poster}
+            <span class="movie-type-badge ${typeClass[item.tipo] || 'badge-pelicula'}">${typeLabel[item.tipo] || item.tipo}</span>
+          </div>
+          <div class="movie-info">
+            <div class="movie-title">${item.titulo}</div>
+            <div class="movie-meta">
+              <span class="movie-genre">${item.genero || '—'}</span>
+              ${item.anio ? `<span>${item.anio}</span>` : ''}
+            </div>
+          </div>
+        </a>`;
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  Filtrado
-    // ════════════════════════════════════════════════════════════════
-    function applyFilters() {
-      var filtered = MOCK_MOVIES.filter(function(m) {
-        var matchGenre  = currentGenre === 'all' || m.genero === currentGenre;
-        var q           = currentSearch.toLowerCase();
-        var matchSearch = !q
-          || m.titulo.toLowerCase().includes(q)
-          || m.director.toLowerCase().includes(q)
-          || String(m.anio).includes(q)
-          || m.genero.toLowerCase().includes(q);
-        return matchGenre && matchSearch;
+    function renderSkeletons(count = 8) {
+      return Array.from({length: count}).map(() => `
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-poster"></div>
+          <div class="skeleton-info">
+            <div class="skeleton skeleton-line" style="width:80%;"></div>
+            <div class="skeleton skeleton-line" style="width:50%;"></div>
+          </div>
+        </div>`).join('');
+    }
+
+    // ── Cargar catálogo ──
+    let allItems = [];
+
+    async function loadCatalog(tipo = '') {
+      const grid = document.getElementById('moviesGrid');
+      grid.innerHTML = renderSkeletons();
+
+      try {
+        const url = tipo ? `${API}/api/catalogo?tipo=${tipo}` : `${API}/api/catalogo`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error) throw new Error(data.error);
+
+        allItems = Array.isArray(data) ? data : [];
+        grid.innerHTML = allItems.length
+          ? allItems.map(renderCard).join('')
+          : `<div class="grid-empty">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg>
+              <p>No hay registros de este tipo en la base de datos.</p>
+              <a href="catalogo.html?tipo=${tipo || 'pelicula'}" style="color:var(--red);margin-top:10px;display:inline-block;font-size:13px;">+ Agregar desde el catálogo</a>
+             </div>`;
+
+        document.getElementById('catalogCount').textContent =
+          allItems.length ? `${allItems.length} registro${allItems.length !== 1 ? 's' : ''}` : '';
+      } catch(e) {
+        grid.innerHTML = `<div class="grid-empty">
+          <p style="color:var(--red);">No se pudo conectar con el servidor.<br/><small>${e.message}</small></p>
+        </div>`;
+      }
+    }
+
+    // ── Contadores ──
+    async function loadCounts() {
+      try {
+        const res = await fetch(`${API}/api/catalogo`);
+        const data = await res.json();
+        if (!Array.isArray(data)) return;
+
+        const counts = { pelicula: 0, documental: 0, serie: 0 };
+        data.forEach(item => { if (counts[item.tipo] !== undefined) counts[item.tipo]++; });
+
+        document.getElementById('countPeliculas').textContent   = counts.pelicula;
+        document.getElementById('countDocumentales').textContent = counts.documental;
+        document.getElementById('countSeries').textContent       = counts.serie;
+      } catch(e) { /* silencioso */ }
+    }
+
+    // ── Tabs ──
+    document.querySelectorAll('.catalog-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.catalog-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        loadCatalog(tab.dataset.tipo);
       });
-      renderMovies(filtered);
-    }
-
-    // ════════════════════════════════════════════════════════════════
-    //  Eventos
-    // ════════════════════════════════════════════════════════════════
-    document.getElementById('genreFilters').addEventListener('click', function(e) {
-      var chip = e.target.closest('.genre-chip');
-      if (!chip) return;
-      document.querySelectorAll('.genre-chip').forEach(function(c) { c.classList.remove('active'); });
-      chip.classList.add('active');
-      currentGenre = chip.dataset.genre;
-      applyFilters();
     });
 
-    var searchInput = document.getElementById('moviesSearch');
-    var searchDebounce;
-    searchInput.addEventListener('input', function() {
-      clearTimeout(searchDebounce);
-      searchDebounce = setTimeout(function() {
-        currentSearch = searchInput.value.trim();
-        applyFilters();
-      }, 250);
+    // ── Búsqueda ──
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      const q = this.value.trim();
+      const results = document.getElementById('searchResults');
+
+      if (!q) { results.innerHTML = ''; return; }
+
+      searchTimeout = setTimeout(async () => {
+        results.innerHTML = renderSkeletons(4);
+        try {
+          const res = await fetch(`${API}/api/catalogo?q=${encodeURIComponent(q)}`);
+          const data = await res.json();
+          results.innerHTML = Array.isArray(data) && data.length
+            ? data.map(renderCard).join('')
+            : `<div class="grid-empty" style="grid-column:1/-1;"><p>Sin resultados para "${q}"</p></div>`;
+        } catch(e) {
+          results.innerHTML = `<div class="grid-empty" style="grid-column:1/-1;"><p style="color:var(--red);">Error de conexión</p></div>`;
+        }
+      }, 350);
     });
 
-    // ════════════════════════════════════════════════════════════════
-    //  Iniciar con todos los datos
-    //
-    //  CUANDO CONECTES LA BD, reemplaza esta línea:
-    //    applyFilters();
-    //  por algo como:
-    //    fetchMoviesFromAPI().then(function(data) {
-    //      MOCK_MOVIES = data;
-    //      applyFilters();
-    //    });
-    // ════════════════════════════════════════════════════════════════
-    applyFilters();
-
-  })();
+    // ── Iniciar ──
+    loadCatalog();
+    loadCounts();
   </script>
-
 </body>
 </html>
