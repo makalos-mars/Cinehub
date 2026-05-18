@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineHub - Mi Perfil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    .perfil-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      max-width: 600px;
+    }
+
+    .perfil-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .perfil-avatar {
+      width: 72px;
+      height: 72px;
+      background: rgba(229, 57, 53, 0.12);
+      border: 2px solid rgba(229, 57, 53, 0.35);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--red);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .perfil-nombre {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 1px;
+    }
+
+    .perfil-rol-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(229, 57, 53, 0.15);
+      border: 1px solid rgba(229, 57, 53, 0.3);
+      color: #ff6b6b;
+      margin-top: 4px;
+    }
+
+    .perfil-campos {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .campo label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .campo span {
+      font-size: 15px;
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .campo span.vacio {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .danger-zone {
+      max-width: 600px;
+      margin-top: 30px;
+      background: rgba(229, 57, 53, 0.05);
+      border: 1px solid rgba(229, 57, 53, 0.2);
+      border-radius: 14px;
+      padding: 28px 32px;
+    }
+
+    .danger-zone h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 1px;
+      color: var(--red);
+      margin-bottom: 8px;
+    }
+
+    .danger-zone p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--red);
+      border: 1px solid rgba(229, 57, 53, 0.5);
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-danger:hover {
+      background: rgba(229, 57, 53, 0.12);
+      border-color: var(--red);
+    }
+
+    /* Modal de confirmación */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      place-items: center;
+    }
+
+    .modal-overlay.open {
+      display: grid;
+    }
+
+    .modal-card {
+      background: #1c1c20;
+      border: 1px solid rgba(229,57,53,0.3);
+      border-radius: 14px;
+      padding: 36px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .modal-icon {
+      width: 52px;
+      height: 52px;
+      background: rgba(229,57,53,0.12);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 18px;
+    }
+
+    .modal-icon svg {
+      width: 24px;
+      height: 24px;
+      color: var(--red);
+    }
+
+    .modal-card h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .modal-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn-cancel {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-cancel:hover { background: #26262b; }
+
+    .btn-confirm-delete {
+      background: var(--red);
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-confirm-delete:hover { background: #f44336; }
+    .btn-confirm-delete:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .home-link {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 7px;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+      border: 1px solid transparent;
+    }
+
+    .home-link:hover {
+      color: var(--text);
+      background: var(--surface);
+      border-color: var(--border);
+    }
+
+    .home-link svg { width: 16px; height: 16px; }
+
+    .loading-perfil {
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 40px 0;
+    }
+
+    .error-perfil {
+      color: var(--red);
+      font-size: 14px;
+      padding: 40px 0;
+    }
+
+    .user-role-badge {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(229, 57, 53, 0.15);
+      border: 1px solid rgba(229, 57, 53, 0.3);
+      color: #ff6b6b;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- BARRA LATERAL -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm10 3l-5 3v-6l5 3z" />
+        </svg>
+      </div>
+      <span class="logo-text">Cine<span>Hub</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="index.html" class="home-link">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
+            <span>Inicio</span>
+          </a>
+        </li>
+        <li><a href="dashboard.html">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 4h3l2 4H4zm4 0h4l2 4h-4zm5 0h3l2 4h-3zM2 9h20v11a2 2 0 01-2 2H4a2 2 0 01-2-2V9z" />
+            </svg>
+            <span>Películas</span>
+          </a></li>
+        <li><a href="reportes.html">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+            </svg>
+            <span>Reportes</span>
+          </a></li>
+        <li><a href="perfil.html" class="active">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+            </svg>
+            <span>Mi Perfil</span>
+          </a></li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="#" class="logout-link" id="logoutBtn">Cerrar sesión</a>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="main-content">
+    <header class="top-bar">
+      <div></div>
+      <div class="user-profile">
+        <span id="userGreeting">Mi Perfil</span>
+        <div class="avatar" id="userAvatar"></div>
+        <span class="user-role-badge" id="userRoleBadge"></span>
+      </div>
+    </header>
+
+    <section class="dashboard-section">
+      <h2 class="section-title">Consulta de Perfil</h2>
+
+      <div id="perfilContainer" class="loading-perfil">Cargando datos desde PostgreSQL...</div>
+    </section>
+
+    <div class="danger-zone">
+      <h3>Zona de Peligro</h3>
+      <p>Eliminar tu cuenta es una acción permanente. Se borrarán tus credenciales y tu perfil del sistema. Esta acción no se puede deshacer.</p>
+      <button class="btn-danger" id="btnEliminar">Eliminar mi cuenta</button>
+    </div>
+  </main>
+
+  <!-- Modal de confirmación -->
+  <div class="modal-overlay" id="modalConfirm">
+    <div class="modal-card">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+          <path d="M10 11v6M14 11v6" />
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+        </svg>
+      </div>
+      <h3>¿Eliminar tu cuenta?</h3>
+      <p>Se borrarán permanentemente tus credenciales y tu perfil de la base de datos. No podrás recuperar tu cuenta.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="btnCancelar">Cancelar</button>
+        <button class="btn-confirm-delete" id="btnConfirmarBaja">Sí, eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:8000';
+
+    const ROL_LABELS = {
+      aficionado: 'Aficionado',
+      critico: 'Crítico',
+      reportero: 'Reportero',
+      director: 'Director'
+    };
+
+    // Campos extra a mostrar por rol (además de nombre y correo)
+    const CAMPOS_EXTRA = {
+      aficionado: [],
+      critico:    [{ key: 'cedula_profesional', label: 'Cédula Profesional' }],
+      reportero:  [{ key: 'nota',       label: 'Nota / Especialidad' },
+                   { key: 'portafolio', label: 'Portafolio' }],
+      director:   [{ key: 'guion', label: 'Guion / Descripción' }]
+    };
+
+    // ── Verificar sesión ──
+    const sessionData = sessionStorage.getItem('cinehub_session');
+    if (!sessionData) {
+      window.location.href = 'login.html';
+    }
+
+    const session = JSON.parse(sessionData);
+
+    // Llenar top bar
+    document.getElementById('userGreeting').textContent = session.nombre || 'Mi Perfil';
+    document.getElementById('userRoleBadge').textContent = ROL_LABELS[session.role] || session.role;
+    const avatarEl = document.getElementById('userAvatar');
+    avatarEl.style.cssText += 'display:grid;place-items:center;font-size:15px;font-weight:700;color:#f0ede8;font-family:"DM Sans",sans-serif;';
+    avatarEl.textContent = (session.nombre || 'U')[0].toUpperCase();
+
+    // ── Cargar perfil desde la DB ──
+    async function cargarPerfil() {
+      const container = document.getElementById('perfilContainer');
+      try {
+        const res = await fetch(`${API}/api/auth/usuario/${encodeURIComponent(session.correo)}`);
+        const data = await res.json();
+
+        if (!data.ok) {
+          container.className = 'error-perfil';
+          container.textContent = data.mensaje || 'No se pudo cargar el perfil.';
+          return;
+        }
+
+        const perfil = data.perfil;
+        const rol = data.rol;
+        const extras = CAMPOS_EXTRA[rol] || [];
+
+        // Obtener el correo del perfil (la columna PK varía por rol)
+        const correoValor = perfil.correo_aficionado || perfil.correo_critico ||
+                            perfil.correo_reportero  || perfil.correo || session.correo;
+
+        const inicial = (perfil.nombre || 'U')[0].toUpperCase();
+
+        let camposExtrasHtml = extras.map(c => `
+          <div class="campo">
+            <label>${c.label}</label>
+            <span class="${!perfil[c.key] ? 'vacio' : ''}">${perfil[c.key] || 'No registrado'}</span>
+          </div>
+        `).join('');
+
+        container.className = '';
+        container.innerHTML = `
+          <div class="perfil-card">
+            <div class="perfil-header">
+              <div class="perfil-avatar">${inicial}</div>
+              <div>
+                <div class="perfil-nombre">${perfil.nombre || '—'}</div>
+                <div class="perfil-rol-badge">${ROL_LABELS[rol] || rol}</div>
+              </div>
+            </div>
+            <div class="perfil-campos">
+              <div class="campo">
+                <label>Correo electrónico</label>
+                <span>${correoValor}</span>
+              </div>
+              <div class="campo">
+                <label>Nombre completo</label>
+                <span>${perfil.nombre || '—'}</span>
+              </div>
+              ${camposExtrasHtml}
+            </div>
+          </div>
+        `;
+      } catch {
+        container.className = 'error-perfil';
+        container.textContent = 'No se pudo conectar con el servidor. ¿Está corriendo el backend?';
+      }
+    }
+
+    cargarPerfil();
+
+    // ── Baja ──
+    document.getElementById('btnEliminar').addEventListener('click', () => {
+      document.getElementById('modalConfirm').classList.add('open');
+    });
+
+    document.getElementById('btnCancelar').addEventListener('click', () => {
+      document.getElementById('modalConfirm').classList.remove('open');
+    });
+
+    document.getElementById('btnConfirmarBaja').addEventListener('click', async () => {
+      const btn = document.getElementById('btnConfirmarBaja');
+      btn.disabled = true;
+      btn.textContent = 'Eliminando...';
+
+      try {
+        const res = await fetch(`${API}/api/auth/usuario/${encodeURIComponent(session.correo)}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+
+        if (!data.ok) {
+          document.getElementById('modalConfirm').classList.remove('open');
+          btn.disabled = false;
+          btn.textContent = 'Sí, eliminar';
+          const danger = document.querySelector('.danger-zone p');
+          danger.style.color = '#e53935';
+          danger.textContent = data.mensaje || 'No se pudo eliminar la cuenta.';
+          return;
+        }
+
+        sessionStorage.removeItem('cinehub_session');
+        window.location.href = 'login.html';
+      } catch {
+        btn.disabled = false;
+        btn.textContent = 'Sí, eliminar';
+        document.getElementById('modalConfirm').classList.remove('open');
+      }
+    });
+
+    // ── Cerrar sesión ──
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem('cinehub_session');
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+
+</html>

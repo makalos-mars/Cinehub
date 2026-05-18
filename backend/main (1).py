@@ -1,11 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
 from typing import Optional
+import traceback
 
-app = FastAPI(title="CineHub API")
+app = FastAPI(title="CineHub API", version="2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -15,17 +16,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Configuración de base de datos ────────────────────────────────────
 DB_CONFIG = {
-    "dbname": "cinemx",
+    "dbname": "cinemx_prototipo",
     "user": "postgres",
-    "password": "diego1415",
+    "password": "byemike24",
     "host": "localhost",
     "port": "5432"
 }
 
-def get_db_connection():
+def get_db():
     return psycopg2.connect(**DB_CONFIG)
 
+# Relación rol → tabla y columna PK de correo
 TABLA_CONFIG = {
     "aficionado": {"tabla": "aficionado", "pk": "correo_aficionado"},
     "critico":    {"tabla": "critico",    "pk": "correo_critico"},
@@ -33,10 +36,7 @@ TABLA_CONFIG = {
     "director":   {"tabla": "director",   "pk": "correo"},
 }
 
-# ── Modelos ──────────────────────────────────────────────────────────
-
-class ConsultaSQL(BaseModel):
-    query: str
+# ── Modelos ───────────────────────────────────────────────────────────
 
 class LoginData(BaseModel):
     correo: str
@@ -52,22 +52,46 @@ class RegistroData(BaseModel):
 class PeliculaData(BaseModel):
     titulo: str
     genero: str
-    tipo: str          # 'pelicula' | 'documental' | 'serie'
     anio: Optional[int] = None
-    duracion: Optional[int] = None   # minutos
+    duracion_min: Optional[int] = None
     sinopsis: Optional[str] = None
-    imagen_url: Optional[str] = None
     id_produccion: Optional[int] = None
 
-class PeliculaUpdate(BaseModel):
-    titulo: Optional[str] = None
-    genero: Optional[str] = None
-    tipo: Optional[str] = None
+class SerieData(BaseModel):
+    titulo: str
+    genero: str
     anio: Optional[int] = None
-    duracion: Optional[int] = None
+    temporadas: Optional[int] = None
     sinopsis: Optional[str] = None
-    imagen_url: Optional[str] = None
     id_produccion: Optional[int] = None
+
+class DocumentalData(BaseModel):
+    titulo: str
+    tema: str
+    anio: Optional[int] = None
+    duracion_min: Optional[int] = None
+    sinopsis: Optional[str] = None
+    id_produccion: Optional[int] = None
+
+class ConsultaSQL(BaseModel):
+    query: str
+
+# ── Helpers ───────────────────────────────────────────────────────────
+
+def run_query(sql: str, params=None, fetch=True):
+    conn = get_db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(sql, params)
+        if fetch:
+            rows = cur.fetchall()
+            return [dict(r) for r in rows]
+        else:
+            conn.commit()
+            return {"affected": cur.rowcount}
+    finally:
+        cur.close()
+        conn.close()
 
 # ── Reportes predefinidos ─────────────────────────────────────────────
 
@@ -100,16 +124,9 @@ REPORTES = {
     """
 }
 
-def _ejecutar(query: str):
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute(query)
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados if resultados else [{"Mensaje": "No se encontraron registros."}]
-
-# ── Endpoints de reportes ─────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════
+#  ENDPOINTS DE REPORTES
+# ═══════════════════════════════════════════════════════════════════════
 
 @app.get("/api/reportes/{reporte_id}")
 def obtener_reporte(reporte_id: str):
@@ -117,70 +134,53 @@ def obtener_reporte(reporte_id: str):
     if not query:
         return [{"error": "Reporte no encontrado"}]
     try:
-        return _ejecutar(query)
+        rows = run_query(query)
+        return rows if rows else [{"Mensaje": "No se encontraron registros."}]
     except Exception as e:
         return [{"error_sql": str(e)}]
 
 @app.post("/api/consulta-libre")
 def ejecutar_consulta_libre(consulta: ConsultaSQL):
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute(consulta.query)
-        if cursor.description:
-            resultados = cursor.fetchall()
-            if not resultados:
-                return [{"Mensaje": "La consulta se ejecutó, pero no se encontraron registros."}]
-        else:
-            conn.commit()
-            resultados = [{"Mensaje": "Consulta ejecutada con éxito (Sin datos para mostrar)"}]
-        cursor.close()
-        conn.close()
-        return resultados
+        rows = run_query(consulta.query)
+        return rows if rows else [{"Mensaje": "Consulta ejecutada. Sin registros."}]
     except Exception as e:
         return [{"error_sql": str(e)}]
 
-# ── Endpoints de autenticación ────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════
+#  AUTENTICACIÓN
+# ═══════════════════════════════════════════════════════════════════════
 
 @app.get("/api/auth/verificar-correo/{correo}")
 def verificar_correo(correo: str):
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT correo FROM credenciales WHERE correo = %s", (correo.lower(),))
-        existe = cursor.fetchone() is not None
-        cursor.close()
-        conn.close()
-        return {"existe": existe}
+        rows = run_query(
+            "SELECT correo FROM credenciales WHERE correo = %s",
+            (correo.lower(),)
+        )
+        return {"existe": len(rows) > 0}
     except Exception as e:
         return {"existe": False, "error": str(e)}
 
 @app.post("/api/auth/login")
 def login(data: LoginData):
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute(
+        rows = run_query(
             "SELECT correo, rol FROM credenciales WHERE correo = %s AND contrasena = %s",
             (data.correo.lower(), data.contrasena)
         )
-        cred = cursor.fetchone()
-        if not cred:
-            cursor.close()
-            conn.close()
+        if not rows:
             return {"ok": False, "mensaje": "Correo o contraseña incorrectos."}
-
+        cred = rows[0]
         rol = cred["rol"]
-        cfg = TABLA_CONFIG[rol]
-        cursor.execute(
+        cfg = TABLA_CONFIG.get(rol)
+        if not cfg:
+            return {"ok": False, "mensaje": f"Rol desconocido: {rol}"}
+        perfil_rows = run_query(
             f"SELECT nombre FROM {cfg['tabla']} WHERE {cfg['pk']} = %s",
             (data.correo.lower(),)
         )
-        perfil = cursor.fetchone()
-        cursor.close()
-        conn.close()
-
-        nombre = perfil["nombre"] if perfil else data.correo
+        nombre = perfil_rows[0]["nombre"] if perfil_rows else data.correo
         return {"ok": True, "correo": data.correo.lower(), "rol": rol, "nombre": nombre}
     except Exception as e:
         return {"ok": False, "mensaje": str(e)}
@@ -189,238 +189,320 @@ def login(data: LoginData):
 def registro(data: RegistroData):
     if data.rol not in TABLA_CONFIG:
         return {"ok": False, "mensaje": "Rol no válido."}
+    conn = get_db()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-
-        cursor.execute("SELECT correo FROM credenciales WHERE correo = %s", (data.correo.lower(),))
-        if cursor.fetchone():
-            cursor.close()
-            conn.close()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT correo FROM credenciales WHERE correo = %s", (data.correo.lower(),))
+        if cur.fetchone():
             return {"ok": False, "mensaje": "Este correo ya está registrado."}
-
         cfg = TABLA_CONFIG[data.rol]
         nombre_completo = f"{data.nombre} {data.apellido}"
-
-        cursor.execute(
+        cur.execute(
             f"INSERT INTO {cfg['tabla']} ({cfg['pk']}, nombre) VALUES (%s, %s)",
             (data.correo.lower(), nombre_completo)
         )
-        cursor.execute(
+        cur.execute(
             "INSERT INTO credenciales (correo, contrasena, rol) VALUES (%s, %s, %s)",
             (data.correo.lower(), data.contrasena, data.rol)
         )
         conn.commit()
-        cursor.close()
-        conn.close()
-
         return {"ok": True, "correo": data.correo.lower(), "rol": data.rol, "nombre": nombre_completo}
     except Exception as e:
+        conn.rollback()
+        return {"ok": False, "mensaje": str(e)}
+    finally:
+        cur.close()
+        conn.close()
+
+@app.get("/api/auth/usuario/{correo}")
+def obtener_usuario(correo: str):
+    try:
+        rows = run_query("SELECT correo, rol FROM credenciales WHERE correo = %s", (correo.lower(),))
+        if not rows:
+            return {"ok": False, "mensaje": "Usuario no encontrado."}
+        rol = rows[0]["rol"]
+        cfg = TABLA_CONFIG[rol]
+        perfil = run_query(
+            f"SELECT * FROM {cfg['tabla']} WHERE {cfg['pk']} = %s",
+            (correo.lower(),)
+        )
+        if not perfil:
+            return {"ok": False, "mensaje": "Perfil no encontrado."}
+        return {"ok": True, "rol": rol, "perfil": perfil[0]}
+    except Exception as e:
         return {"ok": False, "mensaje": str(e)}
 
-# ══════════════════════════════════════════════════════════════════════
-# ── CRUD DE CATÁLOGO (Películas / Documentales / Series) ──────────────
-# ══════════════════════════════════════════════════════════════════════
-
-# ── Listar por tipo (o todos) ─────────────────────────────────────────
-
-@app.get("/api/catalogo")
-def listar_catalogo(tipo: str = None, q: str = None):
-    """
-    Lista todo el catálogo.
-    ?tipo=pelicula|documental|serie  filtra por tipo
-    ?q=texto                         búsqueda por título
-    """
+@app.delete("/api/auth/usuario/{correo}")
+def eliminar_usuario(correo: str):
+    conn = get_db()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT rol FROM credenciales WHERE correo = %s", (correo.lower(),))
+        cred = cur.fetchone()
+        if not cred:
+            return {"ok": False, "mensaje": "Usuario no encontrado."}
+        rol = cred["rol"]
+        cfg = TABLA_CONFIG[rol]
+        cur.execute("DELETE FROM credenciales WHERE correo = %s", (correo.lower(),))
+        cur.execute(f"DELETE FROM {cfg['tabla']} WHERE {cfg['pk']} = %s", (correo.lower(),))
+        conn.commit()
+        return {"ok": True}
+    except Exception as e:
+        conn.rollback()
+        return {"ok": False, "mensaje": "No se puede eliminar: tiene datos asociados en el sistema."}
+    finally:
+        cur.close()
+        conn.close()
 
-        conditions = []
-        params = []
+# ═══════════════════════════════════════════════════════════════════════
+#  ABC — PELÍCULAS
+# ═══════════════════════════════════════════════════════════════════════
 
-        if tipo:
-            conditions.append("p.tipo = %s")
-            params.append(tipo)
-        if q:
-            conditions.append("p.titulo ILIKE %s")
-            params.append(f"%{q}%")
-
-        where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
-
-        cursor.execute(f"""
-            SELECT
-                p.id_pelicula,
-                p.titulo,
-                p.genero,
-                p.tipo,
-                p.anio,
-                p.duracion,
-                p.sinopsis,
-                p.imagen_url,
-                p.id_produccion,
-                d.nombre AS director
+@app.get("/api/peliculas")
+def listar_peliculas():
+    try:
+        rows = run_query("""
+            SELECT p.id_pelicula, p.titulo, p.genero, p.anio,
+                   p.duracion_min, p.sinopsis,
+                   COALESCE(d.nombre, '—') AS director
             FROM pelicula p
             LEFT JOIN produccion pr ON p.id_produccion = pr.id_produccion
             LEFT JOIN director d    ON pr.correo_director = d.correo
-            {where}
             ORDER BY p.titulo
-        """, params)
-
-        rows = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        return rows if rows else []
+        """)
+        return rows
     except Exception as e:
-        return {"error": str(e)}
+        # Si las columnas no existen aún, devuelve lo básico
+        try:
+            rows = run_query("SELECT * FROM pelicula ORDER BY titulo")
+            return rows
+        except Exception as e2:
+            return [{"error": str(e2)}]
 
-
-# ── Obtener uno ───────────────────────────────────────────────────────
-
-@app.get("/api/catalogo/{id_pelicula}")
+@app.get("/api/peliculas/{id_pelicula}")
 def obtener_pelicula(id_pelicula: int):
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("""
-            SELECT p.*, d.nombre AS director
-            FROM pelicula p
-            LEFT JOIN produccion pr ON p.id_produccion = pr.id_produccion
-            LEFT JOIN director d    ON pr.correo_director = d.correo
-            WHERE p.id_pelicula = %s
-        """, (id_pelicula,))
-        row = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        if not row:
-            return {"error": "No encontrado"}
-        return row
+        rows = run_query("SELECT * FROM pelicula WHERE id_pelicula = %s", (id_pelicula,))
+        if not rows:
+            return {"error": "No encontrada"}
+        return rows[0]
     except Exception as e:
         return {"error": str(e)}
 
-
-# ── Alta ──────────────────────────────────────────────────────────────
-
-@app.post("/api/catalogo")
+@app.post("/api/peliculas")
 def crear_pelicula(data: PeliculaData):
-    """
-    Inserta una nueva entrada en la tabla pelicula.
-    El campo 'tipo' debe ser: 'pelicula', 'documental' o 'serie'.
-    """
-    if data.tipo not in ("pelicula", "documental", "serie"):
-        return {"ok": False, "mensaje": "Tipo inválido. Usa: pelicula, documental o serie."}
+    conn = get_db()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("""
-            INSERT INTO pelicula
-                (titulo, genero, tipo, anio, duracion, sinopsis, imagen_url, id_produccion)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING id_pelicula
-        """, (
-            data.titulo, data.genero, data.tipo,
-            data.anio, data.duracion, data.sinopsis,
-            data.imagen_url, data.id_produccion
-        ))
-        new_id = cursor.fetchone()["id_pelicula"]
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            INSERT INTO pelicula (titulo, genero, anio, duracion_min, sinopsis, id_produccion)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """, (data.titulo, data.genero, data.anio, data.duracion_min, data.sinopsis, data.id_produccion))
+        nuevo = dict(cur.fetchone())
         conn.commit()
-        cursor.close()
-        conn.close()
-        return {"ok": True, "id_pelicula": new_id, "mensaje": f"'{data.titulo}' agregado correctamente."}
+        return {"ok": True, "pelicula": nuevo}
     except Exception as e:
-        return {"ok": False, "mensaje": str(e)}
+        conn.rollback()
+        return {"ok": False, "error": str(e)}
+    finally:
+        cur.close(); conn.close()
 
-
-# ── Modificación ──────────────────────────────────────────────────────
-
-@app.put("/api/catalogo/{id_pelicula}")
-def actualizar_pelicula(id_pelicula: int, data: PeliculaUpdate):
+@app.put("/api/peliculas/{id_pelicula}")
+def actualizar_pelicula(id_pelicula: int, data: PeliculaData):
+    conn = get_db()
     try:
-        fields = {k: v for k, v in data.dict().items() if v is not None}
-        if not fields:
-            return {"ok": False, "mensaje": "No hay campos para actualizar."}
-
-        set_clause = ", ".join(f"{k} = %s" for k in fields)
-        values = list(fields.values()) + [id_pelicula]
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            f"UPDATE pelicula SET {set_clause} WHERE id_pelicula = %s",
-            values
-        )
-        updated = cursor.rowcount
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            UPDATE pelicula
+            SET titulo=%s, genero=%s, anio=%s, duracion_min=%s, sinopsis=%s, id_produccion=%s
+            WHERE id_pelicula=%s
+            RETURNING *
+        """, (data.titulo, data.genero, data.anio, data.duracion_min, data.sinopsis, data.id_produccion, id_pelicula))
+        updated = cur.fetchone()
         conn.commit()
-        cursor.close()
-        conn.close()
-
-        if updated == 0:
-            return {"ok": False, "mensaje": "No se encontró el registro."}
-        return {"ok": True, "mensaje": "Actualizado correctamente."}
+        if not updated:
+            return {"ok": False, "error": "Película no encontrada"}
+        return {"ok": True, "pelicula": dict(updated)}
     except Exception as e:
-        return {"ok": False, "mensaje": str(e)}
+        conn.rollback()
+        return {"ok": False, "error": str(e)}
+    finally:
+        cur.close(); conn.close()
 
-
-# ── Baja ──────────────────────────────────────────────────────────────
-
-@app.delete("/api/catalogo/{id_pelicula}")
+@app.delete("/api/peliculas/{id_pelicula}")
 def eliminar_pelicula(id_pelicula: int):
+    conn = get_db()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-
-        # Guardar título antes de borrar
-        cursor.execute("SELECT titulo FROM pelicula WHERE id_pelicula = %s", (id_pelicula,))
-        row = cursor.fetchone()
-        if not row:
-            cursor.close()
-            conn.close()
-            return {"ok": False, "mensaje": "Registro no encontrado."}
-
-        titulo = row["titulo"]
-
-        # Eliminar dependencias primero (cartelera)
-        cursor.execute("DELETE FROM cartelera WHERE id_pelicula = %s", (id_pelicula,))
-        cursor.execute("DELETE FROM pelicula  WHERE id_pelicula = %s", (id_pelicula,))
+        cur = conn.cursor()
+        cur.execute("DELETE FROM pelicula WHERE id_pelicula = %s", (id_pelicula,))
         conn.commit()
-        cursor.close()
-        conn.close()
-        return {"ok": True, "mensaje": f"'{titulo}' eliminado correctamente."}
+        return {"ok": True}
     except Exception as e:
-        return {"ok": False, "mensaje": str(e)}
+        conn.rollback()
+        return {"ok": False, "error": "No se puede eliminar: tiene datos relacionados."}
+    finally:
+        cur.close(); conn.close()
 
+# ═══════════════════════════════════════════════════════════════════════
+#  ABC — SERIES
+# ═══════════════════════════════════════════════════════════════════════
 
-# ── Listar directores (para formularios) ─────────────────────────────
-
-@app.get("/api/directores")
-def listar_directores():
+@app.get("/api/series")
+def listar_series():
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("SELECT correo, nombre FROM director ORDER BY nombre")
-        rows = cursor.fetchall()
-        cursor.close()
-        conn.close()
+        rows = run_query("SELECT * FROM serie ORDER BY titulo")
         return rows
+    except Exception as e:
+        return [{"error": str(e)}]
+
+@app.get("/api/series/{id_serie}")
+def obtener_serie(id_serie: int):
+    try:
+        rows = run_query("SELECT * FROM serie WHERE id_serie = %s", (id_serie,))
+        return rows[0] if rows else {"error": "No encontrada"}
     except Exception as e:
         return {"error": str(e)}
 
-
-# ── Listar producciones (para formularios) ────────────────────────────
-
-@app.get("/api/producciones")
-def listar_producciones():
+@app.post("/api/series")
+def crear_serie(data: SerieData):
+    conn = get_db()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("""
-            SELECT pr.id_produccion, pr.correo_director, d.nombre AS director
-            FROM produccion pr
-            JOIN director d ON pr.correo_director = d.correo
-            ORDER BY d.nombre
-        """)
-        rows = cursor.fetchall()
-        cursor.close()
-        conn.close()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            INSERT INTO serie (titulo, genero, anio, temporadas, sinopsis, id_produccion)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """, (data.titulo, data.genero, data.anio, data.temporadas, data.sinopsis, data.id_produccion))
+        nuevo = dict(cur.fetchone())
+        conn.commit()
+        return {"ok": True, "serie": nuevo}
+    except Exception as e:
+        conn.rollback()
+        return {"ok": False, "error": str(e)}
+    finally:
+        cur.close(); conn.close()
+
+@app.put("/api/series/{id_serie}")
+def actualizar_serie(id_serie: int, data: SerieData):
+    conn = get_db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            UPDATE serie
+            SET titulo=%s, genero=%s, anio=%s, temporadas=%s, sinopsis=%s, id_produccion=%s
+            WHERE id_serie=%s
+            RETURNING *
+        """, (data.titulo, data.genero, data.anio, data.temporadas, data.sinopsis, data.id_produccion, id_serie))
+        updated = cur.fetchone()
+        conn.commit()
+        if not updated:
+            return {"ok": False, "error": "Serie no encontrada"}
+        return {"ok": True, "serie": dict(updated)}
+    except Exception as e:
+        conn.rollback()
+        return {"ok": False, "error": str(e)}
+    finally:
+        cur.close(); conn.close()
+
+@app.delete("/api/series/{id_serie}")
+def eliminar_serie(id_serie: int):
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM serie WHERE id_serie = %s", (id_serie,))
+        conn.commit()
+        return {"ok": True}
+    except Exception as e:
+        conn.rollback()
+        return {"ok": False, "error": "No se puede eliminar: tiene datos relacionados."}
+    finally:
+        cur.close(); conn.close()
+
+# ═══════════════════════════════════════════════════════════════════════
+#  ABC — DOCUMENTALES
+# ═══════════════════════════════════════════════════════════════════════
+
+@app.get("/api/documentales")
+def listar_documentales():
+    try:
+        rows = run_query("SELECT * FROM documental ORDER BY titulo")
         return rows
     except Exception as e:
+        return [{"error": str(e)}]
+
+@app.get("/api/documentales/{id_documental}")
+def obtener_documental(id_documental: int):
+    try:
+        rows = run_query("SELECT * FROM documental WHERE id_documental = %s", (id_documental,))
+        return rows[0] if rows else {"error": "No encontrado"}
+    except Exception as e:
         return {"error": str(e)}
+
+@app.post("/api/documentales")
+def crear_documental(data: DocumentalData):
+    conn = get_db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            INSERT INTO documental (titulo, tema, anio, duracion_min, sinopsis, id_produccion)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """, (data.titulo, data.tema, data.anio, data.duracion_min, data.sinopsis, data.id_produccion))
+        nuevo = dict(cur.fetchone())
+        conn.commit()
+        return {"ok": True, "documental": nuevo}
+    except Exception as e:
+        conn.rollback()
+        return {"ok": False, "error": str(e)}
+    finally:
+        cur.close(); conn.close()
+
+@app.put("/api/documentales/{id_documental}")
+def actualizar_documental(id_documental: int, data: DocumentalData):
+    conn = get_db()
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            UPDATE documental
+            SET titulo=%s, tema=%s, anio=%s, duracion_min=%s, sinopsis=%s, id_produccion=%s
+            WHERE id_documental=%s
+            RETURNING *
+        """, (data.titulo, data.tema, data.anio, data.duracion_min, data.sinopsis, data.id_produccion, id_documental))
+        updated = cur.fetchone()
+        conn.commit()
+        if not updated:
+            return {"ok": False, "error": "Documental no encontrado"}
+        return {"ok": True, "documental": dict(updated)}
+    except Exception as e:
+        conn.rollback()
+        return {"ok": False, "error": str(e)}
+    finally:
+        cur.close(); conn.close()
+
+@app.delete("/api/documentales/{id_documental}")
+def eliminar_documental(id_documental: int):
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM documental WHERE id_documental = %s", (id_documental,))
+        conn.commit()
+        return {"ok": True}
+    except Exception as e:
+        conn.rollback()
+        return {"ok": False, "error": "No se puede eliminar: tiene datos relacionados."}
+    finally:
+        cur.close(); conn.close()
+
+# ═══════════════════════════════════════════════════════════════════════
+#  HEALTH CHECK
+# ═══════════════════════════════════════════════════════════════════════
+
+@app.get("/api/health")
+def health():
+    try:
+        conn = get_db()
+        conn.close()
+        return {"status": "ok", "db": "conectada"}
+    except Exception as e:
+        return {"status": "error", "db": str(e)}
